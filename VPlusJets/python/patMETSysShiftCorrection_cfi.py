@@ -6,7 +6,10 @@ def metShiftSystematicCorrection(process,
                                  runCorrection,
                                  vertexCollection,
                                  didPhotonSmearing,
-                                 didTauSmearing):
+                                 didTauSmearing,
+                                 patTypeIMetCorrected,
+                                 patTypeIMetCorrectedNoSmeared,
+                                 patTypeIMetCorrectedSmeared):
 
 
 
@@ -27,9 +30,8 @@ def metShiftSystematicCorrection(process,
  process.load("JetMETCorrections.Type1MET.pfMETsysShiftCorrections_cfi")
 
  ######## Some basic parameters:
- patTypeIMetCorrected = 'patMETsPFlow'
+ patTypeIMetCorrected.append('patMETsPFlow')
 
- patTypeIMetCorrectedNoSmeared = []
  patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetElectronEnDown')
  patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetElectronEnUp')
  patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetElectronRes')
@@ -55,7 +57,6 @@ def metShiftSystematicCorrection(process,
  patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetUnclusteredEnDown')
  patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetUnclusteredEnUp')
 
- patTypeIMetCorrectedSmeared = []
  patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMet')
  patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetElectronEnDown')
  patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetElectronEnUp')
@@ -126,22 +127,22 @@ def metShiftSystematicCorrection(process,
 
  if not isMC :
 
-  nameShifter = patTypeIMetCorrected+'MEtSysShiftCorr'
-  nameCorrMet = patTypeIMetCorrected+'SysShifted'
+  nameShifter = patTypeIMetCorrected[0]+'MEtSysShiftCorr'
+  nameCorrMet = patTypeIMetCorrected[0]+'SysShifted'
   
-  setattr(process, nameShifter, process.pfMEtSysShiftCorr.clone(src = cms.InputTag(patTypeIMetCorrected)))
-  setattr(process, nameCorrMet, process.pfMetShiftCorrected.clone(src = cms.InputTag(patTypeIMetCorrected),
+  setattr(process, nameShifter, process.pfMEtSysShiftCorr.clone(src = cms.InputTag(patTypeIMetCorrected[0])))
+  setattr(process, nameCorrMet, process.pfMetShiftCorrected.clone(src = cms.InputTag(patTypeIMetCorrected[0]),
                                                                   srcType1Corrections = cms.VInputTag(cms.InputTag(nameShifter))))
 
   process.metShiftSystematicCorrectionSequence += getattr(process,nameShifter)* getattr(process,nameCorrMet)
   
  else :
 
-    nameShifter = patTypeIMetCorrected+'MEtSysShiftCorr'
-    nameCorrMet = patTypeIMetCorrected+'SysShifted'
+    nameShifter = patTypeIMetCorrected[0]+'MEtSysShiftCorr'
+    nameCorrMet = patTypeIMetCorrected[0]+'SysShifted'
 
-    setattr(process, nameShifter, process.pfMEtSysShiftCorr.clone(src = cms.InputTag(patTypeIMetCorrected)))
-    setattr(process, nameCorrMet, process.pfMetShiftCorrected.clone(src = cms.InputTag(patTypeIMetCorrected),
+    setattr(process, nameShifter, process.pfMEtSysShiftCorr.clone(src = cms.InputTag(patTypeIMetCorrected[0])))
+    setattr(process, nameCorrMet, process.pfMetShiftCorrected.clone(src = cms.InputTag(patTypeIMetCorrected[0]),
                                                                     srcType1Corrections = cms.VInputTag(cms.InputTag(nameShifter))))
 
 
