@@ -150,8 +150,11 @@ for path in options.hltPath.split(",") :
 
 from ElectroWeakAnalysis.VPlusJets.patMETSysShiftCorrection_cfi import *
 
-runCorrection = cms.string("Run2012ABCD")
-vertexCollection = cms.InputTag("goodOfflinePrimaryVertices")
+runCorrection                  = cms.string("Run2012ABCD")
+vertexCollection               = cms.InputTag("goodOfflinePrimaryVertices")
+patTypeIMetCorrected           = []
+patTypeIMetCorrectedNoSmeared  = []
+patTypeIMetcorrectedSmeared    = []
 
 metShiftSystematicCorrection(process,
                              options.isMC,
@@ -159,14 +162,55 @@ metShiftSystematicCorrection(process,
                              runCorrection,
                              vertexCollection,
                              options.didPhotonSmearing,
-                             options.didTauSmearing)
+                             options.didTauSmearing,
+                             patTypeIMetCorrected,
+                             patTypeIMetCorrectedNoSmeared,
+                             patTypeIMetcorrectedSmeared)
 
 
-##---------  W-->munu Collection ------------
-#process.load("ElectroWeakAnalysis.VPlusJets.WmunuCollectionsPAT_cfi")
+####################################################
+### Lepton Step : Muon Selection and Lepton Veto ### 
+####################################################
 
-##---------  Jet Collection ----------------
-#process.load("ElectroWeakAnalysis.VPlusJets.JetCollectionsPAT_cfi")
+##--------- W-->munu Collection ------------
+from ElectroWeakAnalysis.VPlusJets.WmunuCollectionsPAT_cfi import*
+
+patMuonCollection     = cms.InputTag("selectedPatMuonsPFlow")
+patElectronCollection = cms.InputTag("selectedPatElectronsPFlow")
+
+if options.isHEEPID:
+    pTCutValue = 50.
+    pTCutLooseMuonVeto = 20.
+else :
+    pTCutValue = 20.
+    pTCutLooseMuonVeto = 20.
+    
+TransverseMassCutValue = 30.
+
+WmunuCollectionsPAT(process,
+                    patMuonCollection ,
+                    patElectronCollection,
+                    vertexCollection,
+                    options.isQCD,
+                    options.isHEEPID,
+                    pTCutValue,
+                    pTCutLooseMuonVeto,
+                    options.isTransverseMassCut,
+                    TransverseMassCutValue,
+                    patTypeIMetCorrected)
+
+
+##############################################
+### Standard AK5 jet collection selection  ### 
+##############################################
+
+#from ElectroWeakAnalysis.VPlusJets.JetCollectionsPAT_cfi import*
+
+#JetCollectionsPAT(process,
+#                  options.isHEEPID)
+
+
+
 
 #
 ##########################################
@@ -237,6 +281,7 @@ metShiftSystematicCorrection(process,
 process.myseq = cms.Sequence( process.TrackVtxPath *
                               process.HLTMu*
                               process.metShiftSystematicCorrectionSequence)
+#                              process.WSequence)
 #                              process.pfMEtSysShiftCorrSequence *
 #                              process.patMetShiftCorrected )
 #    process.WPath *
