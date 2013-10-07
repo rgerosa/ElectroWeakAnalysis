@@ -1,15 +1,15 @@
 import FWCore.ParameterSet.Config as cms
 
 from ElectroWeakAnalysis.VPlusJets.AllPassFilter_cfi import AllPassFilter
-#from ElectroWeakAnalysis.VPlusJets.LooseLeptonVetoPAT_cfi import *
-
-
 
 def WmunuCollectionsPAT(process,
                         patMuonCollection,
+                        patElectronCollection,
+                        vertexCollection,
                         isQCD,
                         isHEEPID,
                         pTCutValue,
+                        pTCutLooseMuonVeto,
                         isTransverseMassCut,
                         TransverseMassCutValue,
                         patTypeICorrectedMet):
@@ -27,9 +27,12 @@ def WmunuCollectionsPAT(process,
 
  print "Chosen Options:                      " 
  print "input pat muon collection                           = %s"%patMuonCollection
+ print "input pat electron collection                       = %s"%patElectronCollection
+ print "input vertex collection                             = %s"%vertexCollection
  print "is running QCD isolation cut                        = %d"%isQCD
  print "run the High pT muon ID instead of Tight  Muon ID   = %d"%isHEEPID
- print "chone pT thresold for the ID                        = %f"%pTCutValue
+ print "chosen pT threshold for the ID                      = %f"%pTCutValue
+ print "chosen pT threshold for loose muon veto             = %f"%pTCutLooseMuonVeto
  print "apply tranverse mass cut                            = %d"%isTransverseMassCut
  print "transverse mass cut value                           = %f"%TransverseMassCutValue
  print "patTypeICorrectedMet                                = %s"%patTypeICorrectedMet
@@ -49,7 +52,7 @@ def WmunuCollectionsPAT(process,
 
  else:
    process.tightMuons = cms.EDFilter("PATMuonSelector",
-                                      src = cms.InputTag("patTunePMuonPFlow"),
+                                      src = cms.InputTag(patMuonCollection),
                                       cut = cms.string(""))
          
  if isQCD:
@@ -65,11 +68,11 @@ def WmunuCollectionsPAT(process,
 
 
  if isHEEPID : process.tightMuons.cut = cms.string((" isGlobalMuon && isTrackerMuon && pt() > %f && abs(dB) < 0.2 && globalTrack().hitPattern().numberOfValidPixelHits() >0 "
-                                                    " && globalTrack().hitPattern().numberOfValidMuonHits() >0 && globalTrack().hitPattern().trackerLayersWithMeasurement() > 8 "
+                                                    " && globalTrack().hitPattern().numberOfValidMuonHits() >0 && globalTrack().hitPattern().trackerLayersWithMeasurement>5   "
                                                     " && numberOfMatchedStations() > 1 && abs(eta)< 2.1 && ptError/pt<0.3"+ isolationCutString)%pTCutValue)
 
                
- else : process.tightMuons.cut = cms.string((" cktTrack.pt()>%f && isGlobalMuon && isPFMuon && abs(eta)<2.4 && globalTrack().normalizedChi2<10"
+ else : process.tightMuons.cut = cms.string((" pt()>%f && isGlobalMuon && isPFMuon && abs(eta)<2.4 && globalTrack().normalizedChi2<10"
                                              " && globalTrack().hitPattern().numberOfValidMuonHits>0 && globalTrack().hitPattern().numberOfValidPixelHits>0 && numberOfMatchedStations>1"
                                              " && globalTrack().hitPattern().trackerLayersWithMeasurement>5 && " + isolationCutString)%pTCutValue)
 
@@ -99,8 +102,18 @@ def WmunuCollectionsPAT(process,
  process.bestWToLepnuStep = AllPassFilter.clone()
  
  ## --------- Loose Lepton Filters ----------
+ if isHEEPID : patMuonCollection = cms.InputTag("patTunePMuonPFlow")
 
-# LooseLeptonVetoPAT(process,isQCD, isHEEPID, isMuonAnalyzer)
+ from ElectroWeakAnalysis.VPlusJets.LooseLeptonVetoPAT_cfi import *
+ 
+ LooseLeptonVetoPAT(process,
+                    isQCD,
+                    isHEEPID,
+                    isMuonAnalyzer,
+                    patMuonCollection,
+                    pTCutLooseMuonVeto,
+                    patElectronCollection,
+                    vertexCollection)
 
  process.WSequence = cms.Sequence(process.patTunePMuonPFlow*
                                   process.tightMuons *
@@ -110,4 +123,4 @@ def WmunuCollectionsPAT(process,
                                   process.bestWmunu *
                                   process.bestWToLepnuStep)
 
-# process.WPath = cms.Sequence(process.WSequence*process.VetoSequence)
+ process.WPath = cms.Sequence(process.WSequence*process.VetoSequence)
