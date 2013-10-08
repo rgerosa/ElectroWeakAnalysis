@@ -1786,6 +1786,9 @@ else :
                                    'keep *_flavorHistoryFilter_*_*',
                                    'keep PileupSummaryInfos_*_*_*',
 				   'keep recoGenJets_selectedPatJetsPFlow_*_*',
+                                   'keep GenEventInfoProduct_*_*_*',
+                                   'keep *_addPileupInfo_*_*',
+                                   'keep LHEEventProduct_*_*_*'                                                               
                                    ]
 
 if options.writePFCands or options.writeFat :
@@ -1812,8 +1815,9 @@ if options.writeFat :
 if options.writeGenParticles :
     if options.useData == False :
         process.out.outputCommands += [
-            'keep *_genParticles_*_*',
-            'keep *_genParticlesForJetsNoNu_*_*'
+            'keep *_*genParticles*_*_*',
+            'keep *_*genParticlesForJetsNoNu*_*_*',
+            'keep recoGenParticles_*_*_*',
             ]
 
 
