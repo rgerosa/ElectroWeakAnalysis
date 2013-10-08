@@ -1,3 +1,4 @@
+
 // ########################################
 // ### -*- C++ -*-                                                                                                                                                    
 // ### Class:      TunePMuonProducer   
@@ -103,6 +104,7 @@ void TunePMuonProducer::produce(edm::Event& iEvent,const edm::EventSetup& iSetup
       /// on the globalTrack and on the innerTrack. Instead, there's another
       /// producer which produces the sigmaPt/overPt, and we add it to the 
       /// pat::Muon as an userFloat.
+      recoMu->addUserFloat("ptError",cktTrack->ptError());
     }
     
     outMuons->push_back(*(recoMu));
