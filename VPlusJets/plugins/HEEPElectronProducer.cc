@@ -47,6 +47,7 @@ class HEEPElectronProducer : public edm::EDProducer {
   unsigned int nTot_;
   unsigned int nPassed_;
 
+  bool debug_ ;
 
 };
 
@@ -63,6 +64,10 @@ HEEPElectronProducer::HEEPElectronProducer(const edm::ParameterSet &  iConfig){
   if( iConfig.existsAs<double>("pTCutValue") )
     pTCutValue_=iConfig.getParameter<double>("pTCutValue");
   else pTCutValue_ = 0.;
+
+  if( iConfig.existsAs<bool>("debug") )
+    debug_=iConfig.getParameter<bool>("debug");
+  else debug_ = false;
 
 
   applyTightID_ = false ;
@@ -128,8 +133,15 @@ void HEEPElectronProducer::beginJob(){}
 //______________________________________________________________________________                                                                                                                  
 void HEEPElectronProducer::endJob(){
 
-  std::stringstream ss;
-  ss<<"nTot="<<nTot_<<" nPassed="<<nPassed_<<" effPassed="<<100.*(nPassed_/(double)nTot_)<<"%\n";
+  if(debug_){
+   std::cout<<" ############################ "<<std::endl;
+   std::cout<<" ### HEEPElectronProducer ### "<<std::endl;
+   std::cout<<" ############################ "<<std::endl;
+   std::stringstream ss;
+   ss<<"nTot="<<nTot_<<" nPassed="<<nPassed_<<" effPassed="<<100.*(nPassed_/(double)nTot_)<<"%\n";
+   std::cout<<ss<<std::endl;
+   std::cout<<" ############################ "<<std::endl;
+  }
 
 }
 
