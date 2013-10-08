@@ -49,6 +49,8 @@ private:
 
    unsigned int nTot_;
    unsigned int nPassed_;
+
+   bool debug_ ;
 };
 
 
@@ -58,10 +60,11 @@ ElectronIdSelector<T>::ElectronIdSelector(const edm::ParameterSet& iConfig){
 
   if(iConfig.existsAs<edm::InputTag>("src"))
     src_ = iConfig.getParameter<edm::InputTag>("src") ;
-  else { std::cerr<<" Missing in put collection --> break the producer "<<std::endl; return ; }
+  else  src_ = edm::InputTag("selectedPatElectronsPFlow");
 
   if(iConfig.existsAs<edm::InputTag>("@module_label"))
     moduleLabel_ = iConfig.getParameter<std::string>("@module_label");
+  else moduleLabel_ = "";
 
   if(iConfig.existsAs<std::string>("idLabel"))
     idLabel_ = iConfig.getParameter<std::string>("idLabel") ;
@@ -74,6 +77,10 @@ ElectronIdSelector<T>::ElectronIdSelector(const edm::ParameterSet& iConfig){
   if(iConfig.existsAs<bool>("useDetectorIsolation"))
     useDetectorIsolation_ = iConfig.getParameter<bool>("useDetectorIsolation") ;
   else useDetectorIsolation_ = false ;
+
+  if(iConfig.existsAs<bool>("debug"))
+    debug_ = iConfig.getParameter<bool>("debug") ;
+  else debug_ = false ;
 
   nTot_ = 0; nPassed_ = 0;
 
@@ -254,11 +261,19 @@ void ElectronIdSelector<T>::beginJob(){}
 
 //______________________________________________________________________________
 template<typename T>
-void ElectronIdSelector<T>::endJob()
-{
-  std::stringstream ss;
-  ss<<"nTot="<<nTot_<<" nPassed="<<nPassed_
-    <<" effPassed="<<100.*(nPassed_/(double)nTot_)<<"%\n";
+void ElectronIdSelector<T>::endJob(){
+
+  if(debug_){
+   std::stringstream ss;
+
+   std::cout<<"########################"<<std::endl;
+   std::cout<<"## ElectronIdSelector ##"<<std::endl;
+   std::cout<<"########################"<<std::endl;
+   ss<<"nTot="<<nTot_<<" nPassed="<<nPassed_<<" effPassed="<<100.*(nPassed_/(double)nTot_)<<"%\n";
+   std::cout<<ss<<std::endl;
+   std::cout<<"########################"<<std::endl;
+   
+  }
 
 }
 
