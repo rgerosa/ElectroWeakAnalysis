@@ -12,11 +12,13 @@ from RecoMET.METProducers.genMetTrue_cfi        import *
 
 def AK5JetCollectionsPATSelection(process,                                  
                                   patJetCollection,
-                                  patJetSmearedCollection,
+                                  patSmearedJetCollection,
                                   isPileUpJetID,
+                                  useMVAPileUpJetID,
                                   useSmearedCollection,
                                   jetPtThreshold,
-                                  isRequireTwoJets):
+                                  isRequireTwoJets,
+                                  isMC):
 
 
  print "                                  "
@@ -33,19 +35,10 @@ def AK5JetCollectionsPATSelection(process,
  print "use Smeared jet collection for selections     = %d"%useSmearedCollection
  print "jet pT threshold to be applied                = %f"%jetPtThreshold
  print "jet two separated jets --> resolved analysis  = %d"%isRequireTwoJets
+ print "is running on data or on MC                   = %d"%isMC
  print "                                  "
-                 
- # Apply loose PF jet ID
- process.ak5PFGoodJets = cms.EDFilter("PFJetIDSelectionFunctorFilter",
-                                       filterParams = pfJetIDSelector.clone(),
-                                       src = patJetCollection,
-                                       filter = cms.bool(True))
 
- ### apply loose jet iD on  Smeared jet collection 
- process.ak5PFGoodSmearedJets = process.ak5PFGoodJets.clone(src = patSmearedJetCollection)
-
-
- ### produce PileUp PF jet ID collection using cur based puJetIdChs
+                  ### produce PileUp PF jet ID collection using cur based puJetIdChs
  process.ak5PFnoPUJets = cms.EDProducer("PATPuJetIdSelector",
                                          src = patJetCollection,
                                          idLabel = cms.string("loose"),
@@ -65,7 +58,23 @@ def AK5JetCollectionsPATSelection(process,
 
  ### in case of mva ID , change the value map
  if useMVAPileUpJetID :
-    process.ak5PFnoPUJetsSmeared.applyMVAID = cms.bool(True) 
+    process.ak5PFnoPUSmearedJets.applyMVAID = cms.bool(True) 
+
+ # Apply loose PF jet ID
+ process.ak5PFGoodJets = cms.EDFilter("PFJetIDSelectionFunctorFilter",
+                                       filterParams = pfJetIDSelector.clone(),
+                                       src = cms.InputTag("ak5PFnoPUJets"),
+                                       filter = cms.bool(True))
+
+ if not isPileUpJetID:
+     process.ak5PFGoodJets.src = patJetCollection
+
+ ### apply loose jet iD on  Smeared jet collection 
+ process.ak5PFGoodSmearedJets = process.ak5PFGoodJets.clone(src = cms.InputTag("ak5PFnoPUSmearedJets"))
+
+ if not isPileUpJetID:
+    process.ak5PFGoodJets.src = patSmearedJetCollection
+
 
        
  ### clean jets from electron and muons   --> by default this use the loose jet id collection, looseMuons and looseElectrons   
@@ -75,16 +84,9 @@ def AK5JetCollectionsPATSelection(process,
                                           srcObjects = cms.VInputTag(cms.InputTag("looseElectrons"),cms.InputTag("looseMuons")),
                                           deltaRMin = cms.double(0.3))
 
- ### in case of pile up jet ID applied, change the input collection
- if isPileUpJetID :
-    process.ak5PFJetsClean.srcJets = cms.InputTag("ak5PFnoPUJets")
-
 
  ### Cleaning of smeared jet collection 
  process.ak5PFSmearedJetsClean = process.ak5PFJetsClean.clone(srcJets = cms.InputTag("ak5PFGoodSmearedJets"))
-
- if isPileUpJetID :
-     process.ak5PFSmearedJetsClean.srcJets = cms.InputTag("ak5PFnoPUSmearedJets")
 
 
  ### pT selection on top of the cleaned jet collection --> all eta, only central and only forward for both smeared and not smeared collection
@@ -94,7 +96,7 @@ def AK5JetCollectionsPATSelection(process,
                                             cut = cms.string('pt > %f'%jetPtThreshold))
 
 
- if useSmearedCollection :
+ if useSmearedCollection and isMC:
      process.ak5PFJetsPtSkimmed.src = cms.InputTag("ak5PFSmearedJetsClean")
 
  process.ak5PFJetsPtSkimmedCentral = cms.EDFilter("PATJetRefSelector",
@@ -102,14 +104,14 @@ def AK5JetCollectionsPATSelection(process,
                                                    cut = cms.string('pt > %f && abs(eta) < 2.4'%jetPtThreshold))
 
 
- if useSmearedCollection :
+ if useSmearedCollection and isMC:
      process.ak5PFJetsPtSkimmedCentral.src = cms.InputTag("ak5PFSmearedJetsClean")
  
  process.ak5PFJetsPtSkimmedForward = cms.EDFilter("PATJetRefSelector",
                                                  src = cms.InputTag("ak5PFJetsClean"),
                                                  cut = cms.string('pt > %f && abs(eta) > 2.4 && abs(eta) < 9.9'%jetPtThreshold))
 
- if useSmearedCollection :
+ if useSmearedCollection and isMC:
      process.ak5PFJetsPtSkimmedForward.src = cms.InputTag("ak5PFSmearedJetsClean")
 
 
@@ -122,10 +124,10 @@ def AK5JetCollectionsPATSelection(process,
 
  ### Define the most general sequence
  
- process.ak5PFJetPath = cms.Sequence( process.ak5PFGoodJets*
-                                      process.ak5PFGoodSmearedJets*
-                                      process.ak5PFnoPUJets*
+ process.ak5PFJetPath = cms.Sequence( process.ak5PFnoPUJets*
                                       process.ak5PFnoPUSmearedJets*
+                                      process.ak5PFGoodJets*
+                                      process.ak5PFGoodSmearedJets*
                                       process.ak5PFJetsClean*
                                       process.ak5PFSmearedJetsClean*
                                       process.ak5PFJetsPtSkimmed*
@@ -145,6 +147,13 @@ def AK5JetCollectionsPATSelection(process,
    process.ak5PFJetPath.remove(process.ak5PFGoodSmearedJets)
    process.ak5PFJetPath.remove(process.ak5PFnoPUSmearedJets)
    process.ak5PFJetPath.remove(process.ak5PFSmearedJetsClean)
+
+ if not isMC :
+   process.ak5PFJetPath.remove(process.ak5PFGoodSmearedJets)
+   process.ak5PFJetPath.remove(process.ak5PFnoPUSmearedJets)
+   process.ak5PFJetPath.remove(process.ak5PFSmearedJetsClean)
+            
+     
    
  ################################################
  ### Gen AK5 Jets and partons --> only for MC ###
@@ -178,7 +187,7 @@ def AK5JetCollectionsPATSelection(process,
  if not useSmearedCollection :
 
   process.genTagJetPath.remove(process.ak5SmearedflavourByRef)
-  process.grnTagJetPath.remove(process.ak5tagSmearedJet)
+  process.genTagJetPath.remove(process.ak5tagSmearedJet)
  
 
  process.GenJetPath = cms.Sequence( process.genParticlesForJets*
