@@ -48,6 +48,8 @@ class PuJetIdSelector : public edm::EDProducer{
 
     unsigned int nTot_;
     unsigned int nPassed_;
+
+    bool debug_ ;
 };
 
 
@@ -73,6 +75,12 @@ PuJetIdSelector<T>::PuJetIdSelector(const edm::ParameterSet& iConfig){
   if(iConfig.existsAs<bool>("applyMVAID"))
     applyMVAID_ = iConfig.getParameter<bool>("applyMVAID");
   else valueMapLabel_ = true ;
+
+
+  if(iConfig.existsAs<bool>("debug"))
+    debug_ = iConfig.getParameter<bool>("debug");
+  else debug_ = false ;
+
 
   nTot_ = 0 ; nPassed_ = 0;
 
@@ -112,15 +120,15 @@ template<typename T>
 void PuJetIdSelector<T>::produce(edm::Event& iEvent,const edm::EventSetup& iSetup){
 
   /////// Pileup jet identification value maps /////
-  edm::Handle<edm::ValueMap<float> > puJetId;
+  edm::Handle<edm::ValueMap<float> > puJetIdMVA;
   edm::Handle<edm::ValueMap<int> >   puJetIdFlag;
 
   if(applyMVAID_){
 
-    iEvent.getByLabel(valueMapLabel_,"fullDiscriminant",puJetId);
+    iEvent.getByLabel(valueMapLabel_,"fullDiscriminant",puJetIdMVA);
     iEvent.getByLabel(valueMapLabel_,"fullId",puJetIdFlag);
   }
-  else{ iEvent.getByLabel(valueMapLabel_,"cutbasedDiscriminant",puJetId);
+  else{ iEvent.getByLabel(valueMapLabel_,"cutbasedDiscriminant",puJetIdMVA);
         iEvent.getByLabel(valueMapLabel_,"cutbasedId",puJetIdFlag);
   }
    
@@ -185,13 +193,16 @@ void PuJetIdSelector<T>::produce(edm::Event& iEvent,const edm::EventSetup& iSetu
 template<typename T>
 void PuJetIdSelector<T>::endJob(){
 
-  std::stringstream ss;
-  ss<<"nTot="<<nTot_<<" nPassed="<<nPassed_
-      <<" effPassed="<<100.*(nPassed_/(double)nTot_)<<"%\n";
-  std::cout<<"++++++++++++++++++++++++++++++++++++++++++++++++++"
-      <<"\n"<<moduleLabel_<<"(PuJetIdSelector) SUMMARY:\n"<<ss.str()
-      <<"++++++++++++++++++++++++++++++++++++++++++++++++++"
-      << std::endl;
+  if(debug_){
+   std::stringstream ss;
+   std::cout<<"#######################"<<std::endl;
+   std::cout<<"### PuJetIdSelector ###"<<std::endl;
+   std::cout<<"#######################"<<std::endl;
+   ss<<"nTot="<<nTot_<<" nPassed="<<nPassed_<<" effPassed="<<100.*(nPassed_/(double)nTot_)<<"%\n";
+   std::cout<<ss<<std::endl;
+   std::cout<<"#######################"<<std::endl;
+  }
+
 }
 
 
