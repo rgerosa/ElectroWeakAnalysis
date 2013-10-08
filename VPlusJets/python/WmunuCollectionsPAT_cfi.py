@@ -64,6 +64,7 @@ def WmunuCollectionsPAT(process,
          ### Isolation Cut given by the Hight pT muon ID group
          isolationCutString = "trackIso()/pt< 0.1"
      else :
+         ### Isolation Cut given by the tight muon ID POG recipe         
          isolationCutString = "(pfIsolationR04().sumChargedHadronPt+max(0.,pfIsolationR04().sumNeutralHadronEt+pfIsolationR04().sumPhotonEt-0.5*pfIsolationR04().sumPUPt))/pt< 0.12"
 
 
@@ -88,7 +89,7 @@ def WmunuCollectionsPAT(process,
  process.WToMunu = cms.EDProducer("CandViewShallowCloneCombiner",
                                    decay = cms.string("tightMuons"+patTypeICorrectedMet[0]),
                                    cut = cms.string('daughter(0).pt >%f && daughter(1).pt >%f && sqrt(2*daughter(0).pt*daughter(1).pt*(1-cos(daughter(0).phi-'
-                                                     'daughter(1).phi)))>0'%(pTCutValue,pTCutValue)), 
+                                                    'daughter(1).phi)))>0'%(pTCutValue,pTCutValue)), 
                                    checkCharge = cms.bool(False))
 
  if isTransverseMassCut : process.WToMunu.cut = cms.string(' daughter(0).pt >%f && daughter(1).pt >%f && sqrt(2*daughter(0).pt*daughter(1).pt*(1-cos(daughter(0).phi-'
@@ -104,8 +105,8 @@ def WmunuCollectionsPAT(process,
  ## --------- Loose Lepton Filters ----------
  if isHEEPID : patMuonCollection = cms.InputTag("patTunePMuonPFlow")
 
- from ElectroWeakAnalysis.VPlusJets.LooseLeptonVetoPAT_cfi import *
- 
+ from ElectroWeakAnalysis.VPlusJets.LooseLeptonVetoPAT_cfi import LooseLeptonVetoPAT
+
  LooseLeptonVetoPAT(process,
                     isQCD,
                     isHEEPID,
