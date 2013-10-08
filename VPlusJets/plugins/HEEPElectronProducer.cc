@@ -1,3 +1,11 @@
+// ########################################
+// ### -*- C++ -*-                                                                                                            
+// ### Class:      HEEPElectronProducer                                                                                                                   
+// ### class HEEPElectronProducer HEEPElectronProducer.cc ElectroWeakAnalysis/VPlusJets/plugins/HEEPElectronProducer.cc                                                              
+// ### Original Author:  Raffaele Angelo Gerosa                                                                                                                     
+// ### Created:  Tue Oct 08 11:57:22 CEST 2013                                                                                                   
+// ########################################  
+
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
@@ -32,6 +40,7 @@ class HEEPElectronProducer : public edm::EDProducer {
 
   edm::InputTag eleLabel_;
   std::string   IdLabel_;
+  double        pTCutValue_;
   bool          applyLooseID_;
   bool          applyTightID_;
 
@@ -51,11 +60,23 @@ HEEPElectronProducer::HEEPElectronProducer(const edm::ParameterSet &  iConfig){
     IdLabel_=iConfig.getParameter<std::string>("eleIdType");
   else IdLabel_= std::string("TightID");
 
+  if( iConfig.existsAs<double>("pTCutValue") )
+    pTCutValue_=iConfig.getParameter<double>("pTCutValue");
+  else pTCutValue_ = 0.;
+
+
   applyTightID_ = false ;
   applyLooseID_ = false ;
 
-  if( IdLabel_ == "TightID" || IdLabel_ == "Tight" || IdLabel_ == "tightID" || IdLabel_ == "tightId" || IdLabel_ == "tightid" || IdLabel_ == "tight" ) applyTightID_ = true ;
-  if( IdLabel_ == "LooseID" || IdLabel_ == "Loose" || IdLabel_ == "LooseID" || IdLabel_ == "looseId" || IdLabel_ == "looseid" || IdLabel_ == "loose" ) applyLooseID_ = true ;
+  if( IdLabel_ == "TightID" || IdLabel_ == "Tight" || IdLabel_ == "tightID" || IdLabel_ == "tightId" || IdLabel_ == "tightid" || IdLabel_ == "tight" ){ 
+    applyTightID_ = true ; 
+    if(!iConfig.existsAs<double>("pTCutValue") ) pTCutValue_ = 90. ; 
+  }
+
+  if( IdLabel_ == "LooseID" || IdLabel_ == "Loose" || IdLabel_ == "LooseID" || IdLabel_ == "looseId" || IdLabel_ == "looseid" || IdLabel_ == "loose" ){
+     applyLooseID_ = true ;
+     if(!iConfig.existsAs<double>("pTCutValue") ) pTCutValue_ = 20. ;
+  }
 
   produces < pat::ElectronCollection >();
 
@@ -83,8 +104,8 @@ void HEEPElectronProducer::produce(edm::Event & iEvent, const edm::EventSetup & 
    Double_t et    = ele.caloEnergy()*sin(ele.p4().theta());
    Double_t scEta = fabs(ele.superCluster()->eta());
 
-   if(eleCutCode == 0 && et > 90 && fabs(ele.eta()) < 2.5 && !(scEta > 1.4442 && scEta < 1.566) && fabs(ele.phi()) < 3.2 && applyTightID_ ) isPassing[eleNr]=true; 
-   if(eleCutCode == 0 && et > 20 && fabs(ele.eta()) < 2.5 && !(scEta > 1.4442 && scEta < 1.566) && fabs(ele.phi()) < 3.2 && applyLooseID_ ) isPassing[eleNr]=true;
+   if(eleCutCode == 0 && et > pTCutValue_ && fabs(ele.eta()) < 2.5 && !(scEta > 1.4442 && scEta < 1.566) && fabs(ele.phi()) < 3.2 && applyTightID_ ) isPassing[eleNr]=true; 
+   if(eleCutCode == 0 && et > pTCutValue_ && fabs(ele.eta()) < 2.5 && !(scEta > 1.4442 && scEta < 1.566) && fabs(ele.phi()) < 3.2 && applyLooseID_ ) isPassing[eleNr]=true;
   }
 
   unsigned int counter=0;
