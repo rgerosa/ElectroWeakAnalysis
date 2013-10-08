@@ -1,3 +1,11 @@
+// ########################################
+// ### -*- C++ -*-                                                                                                                                                    
+// ### Class:      TunePMuonProducer   
+// ### class TunePMuonProducer TunePMuonProducer.cc ElectroWeakAnalysis/VPlusJets/plugins/TunePMuonProducer.cc 
+// ### Original Author:  Raffaele Angelo Gerosa                                                                                         
+// ### Created:  Tue Oct 08 11:57:22 CEST 2013                                                                                                                                         
+// ########################################
+  
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -23,20 +31,22 @@ public:
 
 
 private:
+
   virtual void produce(edm::Event& iEvent, const edm::EventSetup& iSetup);
   virtual void beginJob() ;
   virtual void endJob() ;
 
   edm::InputTag muLabel_; 
-  bool   debug_ ;
-  double muonMass;
+  bool          debug_ ;
+  double        muonMass_;
 
 };
 
 /// Class definition
 TunePMuonProducer::TunePMuonProducer(const edm::ParameterSet& iConfig) {
 
-  muonMass = 0.1056583715; //GeV 
+  muonMass_ = 0.1056583715; //GeV 
+
   if( iConfig.existsAs<std::string>("muLabel") )
      muLabel_=iConfig.getParameter<edm::InputTag>("muLabel");
   else muLabel_ = edm::InputTag("selectedPatMuons");
@@ -76,7 +86,7 @@ void TunePMuonProducer::produce(edm::Event& iEvent,const edm::EventSetup& iSetup
       double oPx = cktTrack->px();
       double oPy = cktTrack->py();
       double oPz = cktTrack->pz();
-      double oE = sqrt((oPx*oPx) + (oPy*oPy) + (oPz*oPz) + (muonMass*muonMass));
+      double oE = sqrt((oPx*oPx) + (oPy*oPy) + (oPz*oPz) + (muonMass_*muonMass_));
       math::XYZTLorentzVector oP4(oPx,oPy,oPz,oE);
 
       if(debug_){
