@@ -109,7 +109,7 @@ bool JetsORboostedV::filter(edm::Event& iEvent, const edm::EventSetup& iSetup){
 
   if(jets->size() >= minNumberJets_ && jets->size() <=maxNumberJets_) result = true;
   
-  edm::Handle<reco::PhotonCollection> photonH;
+  edm::Handle<reco::CandidateView> photonH;
   iEvent.getByLabel(mInputPhotons_,photonH);
 
   if(photonH->size() < minNumberPhotons_ ) result = false;
