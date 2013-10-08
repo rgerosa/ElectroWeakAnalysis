@@ -52,7 +52,7 @@ def WmunuCollectionsPAT(process,
 
  else:
    process.tightMuons = cms.EDFilter("PATMuonSelector",
-                                      src = cms.InputTag(patMuonCollection),
+                                      src = patMuonCollection,
                                       cut = cms.string(""))
          
  if isQCD:
@@ -68,12 +68,11 @@ def WmunuCollectionsPAT(process,
          isolationCutString = "(pfIsolationR04().sumChargedHadronPt+max(0.,pfIsolationR04().sumNeutralHadronEt+pfIsolationR04().sumPhotonEt-0.5*pfIsolationR04().sumPUPt))/pt< 0.12"
 
 
- if isHEEPID : process.tightMuons.cut = cms.string((" isGlobalMuon && isTrackerMuon && pt() > %f && abs(dB) < 0.2 && globalTrack().hitPattern().numberOfValidPixelHits() >0 "
+ if isHEEPID : process.tightMuons.cut = cms.string((" isGlobalMuon && isTrackerMuon && pt > %f && abs(dB) < 0.2 && globalTrack().hitPattern().numberOfValidPixelHits() >0 "
                                                     " && globalTrack().hitPattern().numberOfValidMuonHits() >0 && globalTrack().hitPattern().trackerLayersWithMeasurement>5   "
-                                                    " && numberOfMatchedStations() > 1 && abs(eta)< 2.1 && ptError/pt<0.3"+ isolationCutString)%pTCutValue)
+                                                    " && numberOfMatchedStations() > 1 && abs(eta)< 2.1 && userFloat(\"ptError\")/pt<0.3 && "+ isolationCutString)%pTCutValue)
 
-               
- else : process.tightMuons.cut = cms.string((" pt()>%f && isGlobalMuon && isPFMuon && abs(eta)<2.4 && globalTrack().normalizedChi2<10"
+ else : process.tightMuons.cut = cms.string((" pt>%f && isGlobalMuon && isPFMuon && abs(eta)<2.4 && globalTrack().normalizedChi2<10"
                                              " && globalTrack().hitPattern().numberOfValidMuonHits>0 && globalTrack().hitPattern().numberOfValidPixelHits>0 && numberOfMatchedStations>1"
                                              " && globalTrack().hitPattern().trackerLayersWithMeasurement>5 && " + isolationCutString)%pTCutValue)
 
@@ -87,7 +86,7 @@ def WmunuCollectionsPAT(process,
 
  ## produce the leptonic W candidate from reco Objects --> tight muon and corrected met Type I
  process.WToMunu = cms.EDProducer("CandViewShallowCloneCombiner",
-                                   decay = cms.string("tightMuons"+patTypeICorrectedMet[0]),
+                                   decay = cms.string("tightMuons "+patTypeICorrectedMet[0]),
                                    cut = cms.string('daughter(0).pt >%f && daughter(1).pt >%f && sqrt(2*daughter(0).pt*daughter(1).pt*(1-cos(daughter(0).phi-'
                                                     'daughter(1).phi)))>0'%(pTCutValue,pTCutValue)), 
                                    checkCharge = cms.bool(False))
