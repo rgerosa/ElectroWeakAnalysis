@@ -9,43 +9,49 @@ import pprint
 options = VarParsing ('python')
 
 options.register ('isMC', True, VarParsing.multiplicity.singleton, VarParsing.varType.int,
-                   "Run this on simulation")
+                  "Run this on simulation")
 
 options.register ('isQCD', False, VarParsing.multiplicity.singleton, VarParsing.varType.int,
-                   "Run the QCD Isolation Selection")
+                  "Run the QCD Isolation Selection")
 
 options.register ('isTransverseMassCut', False, VarParsing.multiplicity.singleton, VarParsing.varType.int,
-                   "Apply a mT cut on the leptonic leg (W) of the selected events")
+                  "Apply a mT cut on the leptonic leg (W) of the selected events")
 
 options.register ('isHEEPID', True, VarParsing.multiplicity.singleton, VarParsing.varType.int,
-                   "Use the HEEP electron ID instead of the MVA one")
+                  "Use the HEEP electron ID instead of the MVA one")
 
 options.register ('globalTag', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
-                   "Global Tag to be used")
+                  "Global Tag to be used")
 
 options.register ('numEventsToRun', -1, VarParsing.multiplicity.singleton, VarParsing.varType.int,
-                   "Number of events to process: -1 means all the input events")
+                  "Number of events to process: -1 means all the input events")
 
 options.register ('OutputFileName', 'WmunuJetAnalysisntuple.root', VarParsing.multiplicity.singleton, VarParsing.varType.string,
-                   "Name of the output file")
+                  "Name of the output file")
 
 options.register ('reportEvery', 500, VarParsing.multiplicity.singleton, VarParsing.varType.int,
-                   "Number of events after which print the report")
+                  "Number of events after which print the report")
 
 options.register ('runMetFilters', False, VarParsing.multiplicity.singleton, VarParsing.varType.int,
-                   "Run the python/TrackingCollections_cfi to apply met filters and primary vertex collection skim")
+                  "Run the python/TrackingCollections_cfi to apply met filters and primary vertex collection skim")
 
 options.register ('useSmearedCollection', True, VarParsing.multiplicity.singleton, VarParsing.varType.int,
-                   "In case of MC analysis use smearedJets and smearedMet as default")
+                  "In case of MC analysis use smearedJets and smearedMet as default")
 
 options.register ('hltPath', 'HLT_IsoMu24_*, HLT_Mu40_eta2p1*', VarParsing.multiplicity.singleton, VarParsing.varType.string,
-                   "List of HLT path to be required when running on data. Should be separetad by ")
+                  "List of HLT path to be required when running on data. Should be separetad by ")
 
 options.register ('didPhotonSmearing', True, VarParsing.multiplicity.singleton, VarParsing.varType.int,
-                   "true if in PAT the photon smearing for resolution has been done")
+                  "true if in PAT the photon smearing for resolution has been done")
 
 options.register ('didTauSmearing', True, VarParsing.multiplicity.singleton, VarParsing.varType.int,
-                   "true if in PAT the tau smearing for resolution has been done")
+                  "true if in PAT the tau smearing for resolution has been done")
+
+options.register ('isPileUpJetID', True, VarParsing.multiplicity.singleton, VarParsing.varType.int,
+                  "true if you want to skim jet collection for the loose pile Up jet ID")
+
+options.register ('isRequireTwoJets', False, VarParsing.multiplicity.singleton, VarParsing.varType.int,
+                  "true if you want to do the two jet analysis --> resolved jet, non boosted category")
 
 
 options.parseArguments()
@@ -140,8 +146,7 @@ process.HLTMu = cms.EDFilter("HLTHighLevel",
                               throw = cms.bool(False) # throw exception on unknown path names
                             )
 
-for path in options.hltPath.split(",") :
-    
+for path in options.hltPath.split(",") :    
     process.HLTMu.HLTPaths.append(path.replace(' ',''))
     
 #######################################
@@ -181,6 +186,7 @@ patElectronCollection = cms.InputTag("selectedPatElectronsPFlow")
 if options.isHEEPID:
     pTCutValue = 50.
     pTCutLooseMuonVeto = 20.
+
 else :
     pTCutValue = 20.
     pTCutLooseMuonVeto = 20.
@@ -204,26 +210,38 @@ WmunuCollectionsPAT(process,
 ### Standard AK5 jet collection selection  ### 
 ##############################################
 
-#from ElectroWeakAnalysis.VPlusJets.JetCollectionsPAT_cfi import*
+from ElectroWeakAnalysis.VPlusJets.AK5JetCollectionsPATSelection_cfi import *
 
-#JetCollectionsPAT(process,
-#                  options.isHEEPID)
+patJetCollection        = cms.InputTag("selectedPatJetsPFlow")
+patSmearedJetCollection = cms.InputTag("smearedPatJetsPFlow")
+jetPtThreshold          = 30.
+useMVAPileUpJetID       = True
 
+AK5JetCollectionsPATSelection(process,
+                              patJetCollection,
+                              patSmearedJetCollection,
+                              options.isPileUpJetID,
+                              useMVAPileUpJetID,
+                              options.useSmearedCollection,
+                              jetPtThreshold,
+                              options.isRequireTwoJets,
+                              options.isMC)
+    
 
+#############################################################################################################################
+### Filter to require or at least two jets or one with hight pT --> preselection common to boosted and unboosted category ###    
+#############################################################################################################################
 
+process.RequireTwoJetsORboostedV = cms.EDFilter("JetsORboostedV",
+                                                 minNumber = cms.untracked.int32(2),
+                                                 maxNumber = cms.untracked.int32(100),
+                                                 srcJets = cms.InputTag("ak5PFJetsPtSkimmed"),
+                                                 srcVectorBoson = cms.InputTag("bestWmunu"),
+                                                 srcPhotons = cms.InputTag("selectedPatPhotons"),
+                                                 minVpt = cms.untracked.double(100.),
+                                                 minNumberPhotons = cms.untracked.int32(0))
 
-#
-##########################################
-## Filter to require at least two jets in the event
-#process.RequireTwoJetsORboostedV = cms.EDFilter("JetsORboostedV",
-#    minNumber = cms.untracked.int32(2),
-#    maxNumber = cms.untracked.int32(100),
-#    srcJets = cms.InputTag("ak5PFJetsLooseIdAll"),
-#    srcVectorBoson = cms.InputTag("bestWmunu"),
-#    minVpt = cms.untracked.double(100.),
-#    minNumberPhotons = cms.untracked.int32(0)
-#)
-#process.RequireTwoJetsORboostedVStep = process.AllPassFilter.clone()
+process.RequireTwoJetsORboostedVStep = process.AllPassFilter.clone()
 
 
 ##-------- Save V+jets trees --------
@@ -278,32 +296,29 @@ WmunuCollectionsPAT(process,
 #    process.VplusJets.JEC_GlobalTag_forGroomedJet = cms.string("FT_53_V10_AN3")
 
 
+
+
 process.myseq = cms.Sequence( process.TrackVtxPath *
                               process.HLTMu*
-                              process.metShiftSystematicCorrectionSequence)
-#                              process.WSequence)
-#                              process.pfMEtSysShiftCorrSequence *
-#                              process.patMetShiftCorrected )
-#    process.WPath *
-#    process.GenJetPath *
-##    process.btagging * 
-#    process.TagJetPath *
-#    process.PFJetPath *
-#    process.RequireTwoJetsORboostedV *
-#    process.RequireTwoJetsORboostedVStep
-#    )
+                              process.metShiftSystematicCorrectionSequence*
+                              process.WPath*
+                              process.GenJetPath*
+                              process.genTagJetPath*
+                              process.ak5PFJetPath*
+                              process.RequireTwoJetsORboostedV
+                              )                             
+
 
 if options.isMC:
      process.myseq.remove ( process.HLTMu)
-#else:
-#    process.myseq.remove ( process.GenJetPath)
-#    process.myseq.remove ( process.TagJetPath)
+else:
+     process.myseq.remove ( process.GenJetPath)
+     process.myseq.remove ( process.genTagJetPath)
 
 if not options.runMetFilters :
     process.myseq.remove(process.TrackVtxPath)
 
 process.p = cms.Path( process.myseq)
-#* process.VplusJets)
 
 ############################
 ## Dump the output Python ##
