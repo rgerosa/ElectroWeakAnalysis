@@ -158,7 +158,7 @@ def metShiftSystematicCorrection(process,
             nameShifter = module+'MEtSysShiftCorr'
             nameCorrMet = module+'SysShifted'
 
-            setattr(process,name, process.pfMEtSysShiftCorr.clone(src = cms.InputTag(module)))
+            setattr(process,nameShifter, process.pfMEtSysShiftCorr.clone(src = cms.InputTag(module)))
             setattr(process,nameCorrMet, process.pfMetShiftCorrected.clone(src = cms.InputTag(module),
                                                                            srcType1Corrections = cms.VInputTag(cms.InputTag(nameShifter))))
 
