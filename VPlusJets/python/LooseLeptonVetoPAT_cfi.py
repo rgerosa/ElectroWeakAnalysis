@@ -15,7 +15,7 @@ def LooseLeptonVetoPAT(process,
 
  print "                               "
  print "###############################"
- print "## Loose Lepton veto Moduel  ##"
+ print "## Loose Lepton veto Module  ##"
  print "###############################"
  print "                               "
 
@@ -43,7 +43,7 @@ def LooseLeptonVetoPAT(process,
                                        " && globalTrack().hitPattern().numberOfValidPixelHits>0 "
                                        " && globalTrack().hitPattern().numberOfValidMuonHits>0 "
                                        " && globalTrack().hitPattern().trackerLayersWithMeasurement>5 "
-                                       " && numberOfMatchedStations>1 && ptError/pt<0.3"%pTCutLooseMuonVeto)
+                                       " && numberOfMatchedStations>1 && userFloat(\"ptError\")/pt<0.3"%pTCutLooseMuonVeto)
 
    ## filter the event where there are loose muons --> 
    process.looseMuonFilter = cms.EDFilter("PATCandViewCountFilter",
@@ -69,7 +69,7 @@ def LooseLeptonVetoPAT(process,
                                             pTCutValue = cms.double(20.))
 
    if isMuonAnalyzer :
-     process.looseElectrons.electronCollection = "heepPatElectronsPFlow"
+     process.looseElectrons.electronCollection = cms.InputTag("heepPatElectronsPFlow")
 
    ## select events with a least one for the moment
    process.looseElectronFilter = cms.EDFilter("PATCandViewCountFilter",
