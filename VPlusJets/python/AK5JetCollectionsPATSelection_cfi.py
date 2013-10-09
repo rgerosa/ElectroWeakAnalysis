@@ -60,6 +60,7 @@ def AK5JetCollectionsPATSelection(process,
  if useMVAPileUpJetID :
     process.ak5PFnoPUSmearedJets.applyMVAID = cms.bool(True) 
 
+
  # Apply loose PF jet ID
  process.ak5PFGoodJets = cms.EDFilter("PFJetIDSelectionFunctorFilter",
                                        filterParams = pfJetIDSelector.clone(),
@@ -76,7 +77,6 @@ def AK5JetCollectionsPATSelection(process,
     process.ak5PFGoodJets.src = patSmearedJetCollection
 
 
-       
  ### clean jets from electron and muons   --> by default this use the loose jet id collection, looseMuons and looseElectrons   
  process.ak5PFJetsClean = cms.EDProducer("PFPATJetCleaner",
                                           srcJets = cms.InputTag("ak5PFGoodJets"),
@@ -114,7 +114,6 @@ def AK5JetCollectionsPATSelection(process,
  if useSmearedCollection and isMC:
      process.ak5PFJetsPtSkimmedForward.src = cms.InputTag("ak5PFSmearedJetsClean")
 
-
  ### Filter to require at least two jets in the event , to be applied for two jets topology --> after pT skim
 
  process.RequireTwoJets = cms.EDFilter("PATCandViewCountFilter",
@@ -122,6 +121,7 @@ def AK5JetCollectionsPATSelection(process,
                                         maxNumber = cms.uint32(100),
                                         src = cms.InputTag("ak5PFJetsPtSkimmed"))
 
+ process.RequireTwoJetsStep = AllPassFilter.clone()
  ### Define the most general sequence
  
  process.ak5PFJetPath = cms.Sequence( process.ak5PFnoPUJets*
@@ -134,9 +134,8 @@ def AK5JetCollectionsPATSelection(process,
                                       process.ak5PFJetsPtSkimmedCentral*
                                       process.ak5PFJetsPtSkimmedForward)
 
-
  if isRequireTwoJets :
-   process.ak5PFJetPath += process.RequireTwoJets
+   process.ak5PFJetPath += process.RequireTwoJets*process.RequireTwoJetsStep
                                             
  if not isPileUpJetID :
    process.ak5PFJetPath.remove(process.ak5PFnoPUJets)
