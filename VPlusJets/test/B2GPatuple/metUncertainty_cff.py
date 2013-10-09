@@ -883,7 +883,7 @@ def runMetUncertainty(process,
  if doSmearing and not useData :
      process.out.outputCommands += [
                                     'keep *_smearedPatJetsPFlow*_*_*',
-                                    'keep *_shiftedPatJetsPFlow*_*_*',
+                                    'keep *_shifted*PatJetsPFlow*_*_*',
                                     'keep *_shiftedPatElectronsPFlowEn*_*_*',
                                     'keep *_shiftedPatMuonsPFlowEn*_*_*',
                                     'keep *_shiftedPatTausPFlowEn*_*_*',
