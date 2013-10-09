@@ -240,8 +240,18 @@ WmunuCollectionsPAT(process,
 
 from ElectroWeakAnalysis.VPlusJets.AK5JetCollectionsPATSelection_cfi import *
 
-patJetCollection        = cms.InputTag("selectedPatJetsPFlow")
-patSmearedJetCollection = cms.InputTag("smearedPatJetsPFlow")
+patJetCollection        = []
+patJetCollection.append('selectedPatJetsPFlow')
+patJetCollection.append('shiftedPatJetsPFlowEnUp')
+patJetCollection.append('shiftedPatJetsPFlowEnDown')
+
+patSmearedJetCollection = []
+patSmearedJetCollection.append('smearedPatJetsPFlow')
+patSmearedJetCollection.append('shiftedSmearedPatJetsPFlowEnUp')
+patSmearedJetCollection.append('shiftedSmearedPatJetsPFlowEnDown')
+patSmearedJetCollection.append('smearedPatJetsPFlowResDown')
+patSmearedJetCollection.append('smearedPatJetsPFlowResUp')
+
 jetPtThreshold          = 30.
 useMVAPileUpJetID       = True
 
