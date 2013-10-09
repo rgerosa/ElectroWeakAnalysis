@@ -1668,12 +1668,12 @@ if options.useData :
     if options.writeFat :
         process.out.fileName = cms.untracked.string('/data2/rgerosa/' + options.tlbsmTag + '_data_fat.root')
     else :
-        process.out.fileName = cms.untracked.string('./' + options.tlbsmTag + '_data.root')
+        process.out.fileName = cms.untracked.string('/data2/rgerosa/' + options.tlbsmTag + '_data.root')
 else :
     if options.writeFat :
         process.out.fileName = cms.untracked.string('/data2/rgerosa/' + options.tlbsmTag + '_mc_fat.root')
     else :
-        process.out.fileName = cms.untracked.string('./' + options.tlbsmTag + '_mc.root')
+        process.out.fileName = cms.untracked.string('/data2/rgerosa/' + options.tlbsmTag + '_mc.root')
 
 
 # reduce verbosity
@@ -1903,20 +1903,63 @@ process.puJetMvaChs.algos[0].tmvaWeights = cms.string("CMGTools/External/data/TM
 process.puJetIdSequenceChs = cms.Sequence(process.puJetIdChs*
                                           process.puJetMvaChs)
 
-if not options.useData and options.doSmearing and options.doMetUncertainty :
+if not options.useData and options.doMetUncertainty :
 
- process.puSmearedJetIdChs  = process.puJetIdChs.clone(jets = cms.InputTag("smearedPatJetsPFlow"))
+ process.puJetIdChsEnUp  = process.puJetIdChs.clone(jets = cms.InputTag("shiftedPatJetsPFlowEnUp"))
+
+ process.puJetMvaChsEnUp = process.puJetMvaChs.clone(jets = cms.InputTag("shiftedPatJetsPFlowEnUp"),
+                                                     jetids = cms.InputTag("puJetIdChsEnUp"))
+
+ process.puJetIdChsEnDown  = process.puJetIdChs.clone(jets = cms.InputTag("shiftedPatJetsPFlowEnDown"))
+
+ process.puJetMvaChsEnDown = process.puJetMvaChs.clone(jets = cms.InputTag("shiftedPatJetsPFlowEnDown"),
+                                                       jetids = cms.InputTag("puJetIdChsEnDown"))
+
+ process.puJetIdSequenceChs += process.puJetIdChsEnUp*process.puJetMvaChsEnUp
+ process.puJetIdSequenceChs += process.puJetIdChsEnDown*process.puJetMvaChsEnDown
  
- process.puSmearedJetMvaChs = process.puJetMvaChs.clone(jets = cms.InputTag("smearedPatJetsPFlow"),
-                                                        jetids = cms.InputTag("puSmearedJetIdChs"))
 
- process.puJetIdSequenceChs += process.puSmearedJetIdChs*process.puSmearedJetMvaChs
+ if options.doSmearing :
+     
+  process.puSmearedJetIdChs       = process.puJetIdChs.clone(jets = cms.InputTag("smearedPatJetsPFlow"))
+ 
+  process.puSmearedJetMvaChs      = process.puJetMvaChs.clone(jets = cms.InputTag("smearedPatJetsPFlow"),
+                                                              jetids = cms.InputTag("puSmearedJetIdChs"))
+
+  process.puSmearedJetIdChsResUp  = process.puJetIdChs.clone(jets = cms.InputTag("smearedPatJetsPFlowResUp"))
+ 
+  process.puSmearedJetMvaChsResUp = process.puJetMvaChs.clone(jets = cms.InputTag("smearedPatJetsPFlowResUp"),
+                                                              jetids = cms.InputTag("puSmearedJetIdChsResUp"))
+
+  process.puSmearedJetIdChsResDown  = process.puJetIdChs.clone(jets = cms.InputTag("smearedPatJetsPFlowResDown"))
+ 
+  process.puSmearedJetMvaChsResDown = process.puJetMvaChs.clone(jets = cms.InputTag("smearedPatJetsPFlowResDown"),
+                                                                jetids = cms.InputTag("puSmearedJetIdChsResDown"))
+
+
+  process.pushiftedSmearedJetIdChsEnUp    = process.puJetIdChs.clone(jets = cms.InputTag("shiftedSmearedPatJetsPFlowEnUp"))
+ 
+  process.pushiftedSmearedJetMvaChsEnUp   = process.puJetMvaChs.clone(jets = cms.InputTag("shiftedSmearedPatJetsPFlowEnUp"),
+                                                                      jetids = cms.InputTag("pushiftedSmearedJetIdChsEnUp"))
+
+  process.pushiftedSmearedJetIdChsEnDown  = process.puJetIdChs.clone(jets = cms.InputTag("shiftedSmearedPatJetsPFlowEnDown"))
+ 
+  process.pushiftedSmearedJetMvaChsEnDown = process.puJetMvaChs.clone(jets = cms.InputTag("shiftedSmearedPatJetsPFlowEnDown"),
+                                                                      jetids = cms.InputTag("pushiftedSmearedJetIdChsEnDown"))
+
+  
+  process.puJetIdSequenceChs += process.puSmearedJetIdChs*process.puSmearedJetMvaChs
+  process.puJetIdSequenceChs += process.puSmearedJetIdChsResUp*process.puSmearedJetMvaChsResUp
+  process.puJetIdSequenceChs += process.puSmearedJetIdChsResDown*process.puSmearedJetMvaChsResDown
+  process.puJetIdSequenceChs += process.pushiftedSmearedJetIdChsEnUp*process.pushiftedSmearedJetMvaChsEnUp
+  process.puJetIdSequenceChs += process.pushiftedSmearedJetIdChsEnDown*process.pushiftedSmearedJetMvaChsEnDown
+  
+
 
 process.patseq += process.puJetIdSequenceChs
 
 process.out.outputCommands += ['keep *_pu*JetId*_*_*',
-                               'keep *_pu*JetMva*_*_*'
-                              ]
+                                'keep *_pu*JetMva*_*_*']
 
 
 ############################
