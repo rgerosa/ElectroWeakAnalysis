@@ -1668,12 +1668,12 @@ if options.useData :
     if options.writeFat :
         process.out.fileName = cms.untracked.string('/data2/rgerosa/' + options.tlbsmTag + '_data_fat.root')
     else :
-        process.out.fileName = cms.untracked.string('/data2/rgerosa/' + options.tlbsmTag + '_data.root')
+        process.out.fileName = cms.untracked.string('./' + options.tlbsmTag + '_data.root')
 else :
     if options.writeFat :
         process.out.fileName = cms.untracked.string('/data2/rgerosa/' + options.tlbsmTag + '_mc_fat.root')
     else :
-        process.out.fileName = cms.untracked.string('/data2/rgerosa/' + options.tlbsmTag + '_mc.root')
+        process.out.fileName = cms.untracked.string('./' + options.tlbsmTag + '_mc.root')
 
 
 # reduce verbosity
@@ -1691,6 +1691,7 @@ process.source.inputCommands = cms.untracked.vstring("keep *", "drop *_MEtoEDMCo
 
 
 process.out.outputCommands = ['drop *_cleanPat*_*_*',
+                              'keep *_cleanPatPhotons*_*_*',
                               'keep *_selectedPat*_*_*',
                               'keep *_goodPat*_*_*',
 #                              'drop *_goodPatJetsCA8PrunedPF_*_*',
@@ -1761,6 +1762,7 @@ process.out.outputCommands = ['drop *_cleanPat*_*_*',
                               'keep *_pfType1p2CorrectedMet_*_*',
                               'keep *_phoPFIso_*_*',
                               'keep *_photon*_*_*',
+                              'keep *_pfIsolatedPhotonsPFlow_*_*',                              
                               'keep *_allConversions__*',
                               'keep *_gsfElectron*__*',
                               'keep *_correctedHybridSuperClusters_*_*',
@@ -1838,10 +1840,23 @@ if options.usePythia6andPythia8 :
     process.patJetPartonMatchPFlowLoose.mcStatus = cms.vint32(3,23)
     process.patJetPartonMatchPFlowNoCHS.mcStatus = cms.vint32(3,23)
 
-#######################################################################################
-## Add metUncertainty sequence to the cms.Path
-########################################################################################
+###################################################
+### Add metUncertainty sequence to the cms.Path ###
+###################################################
 from TopQuarkAnalysis.TopPairBSM.metUncertainty_cff import runMetUncertainty
+
+## in input to this metUcertainty tool we need cleaned collections: Muons, Electrons, Jets, Taus and Unclstered particles are
+## already clean thanks to the PF2PAT sequence which use in input all the pfCandidate correctly. Since we wnat to keep
+## both pfPhotons and patPhotons form reco::Photons (reco are better than pf in resolution --> used in Hgg) the cleaning stage run in the
+## patDeafault sequence has to be modified taking the PFlow collection:
+
+process.cleanPatCandidates.replace(process.cleanPatMuons,process.cleanPatMuonsPFlow)
+process.cleanPatCandidates.replace(process.cleanPatElectrons,process.cleanPatElectronsPFlow)
+process.cleanPatPhotons.checkOverlaps.electrons.src = cms.InputTag("cleanPatElectronsPFlow") 
+process.cleanPatCandidates.replace(process.cleanPatTaus,process.cleanPatTausPFlow)
+process.cleanPatCandidates.replace(process.cleanPatJets,process.cleanPatJetsPFlow)
+process.cleanPatJetsPFlow.checkOverlaps.photons.src = cms.InputTag("cleanPatPhotons")
+process.patDefaultSequence.remove(process.countPatCandidates)
 
 patJetCollection        = cms.InputTag("selectedPatJets"+postfix)
 patMuonCollection       = cms.InputTag("patMuons"+postfix)
