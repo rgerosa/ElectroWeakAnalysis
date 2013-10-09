@@ -26,7 +26,7 @@ options.register ('globalTag', '', VarParsing.multiplicity.singleton, VarParsing
 options.register ('numEventsToRun', -1, VarParsing.multiplicity.singleton, VarParsing.varType.int,
                   "Number of events to process: -1 means all the input events")
 
-options.register ('OutputFileName', 'WmunuJetAnalysisntuple.root', VarParsing.multiplicity.singleton, VarParsing.varType.string,
+options.register ('outputFileName', 'WmunuJetAnalysisntuple.root', VarParsing.multiplicity.singleton, VarParsing.varType.string,
                   "Name of the output file")
 
 options.register ('reportEvery', 500, VarParsing.multiplicity.singleton, VarParsing.varType.int,
@@ -52,6 +52,9 @@ options.register ('isPileUpJetID', True, VarParsing.multiplicity.singleton, VarP
 
 options.register ('isRequireTwoJets', False, VarParsing.multiplicity.singleton, VarParsing.varType.int,
                   "true if you want to do the two jet analysis --> resolved jet, non boosted category")
+
+options.register ('skipAnalyzerAndDumpOutput', False, VarParsing.multiplicity.singleton, VarParsing.varType.int,
+                  "true if you don't want to run the analyzer but dump a output file with all the collections keep*")
 
 
 options.parseArguments()
@@ -126,15 +129,32 @@ process.MessageLogger.cerr.FwkReport.reportEvery = options.reportEvery
 process.options                                  = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
 #process.options                                 = cms.untracked.PSet( SkipEvent = cms.untracked.vstring('ProductNotFound'))
 
-process.TFileService = cms.Service("TFileService", 
-                                    fileName      = cms.string( options.OutputFileName ),
-                                    closeFileFast = cms.untracked.bool(False))
+if not options.skipAnalyzerAndDumpOutput :
+  process.TFileService = cms.Service("TFileService", 
+                                      fileName      = cms.string( options.outputFileName ),
+                                      closeFileFast = cms.untracked.bool(False))
+else:
+
+  process.output = cms.OutputModule( "PoolOutputModule",
+                                      fileName = cms.untracked.string(options.outputFileName),
+                                      SelectEvents   = cms.untracked.PSet(SelectEvents = cms.vstring('p')),
+                                      outputCommands = cms.untracked.vstring('keep *_*_*_*PAT*',
+                                                                             'keep *_*_*_*demo*'),
+                                      dropMetaData   = cms.untracked.string('ALL'))
+
+
+## --- to measure all the evetns processed
+process.AllEventsStep = process.AllPassFilter.clone()
+    
 
 ##---------  Vertex and track Collections -----------
 process.load("ElectroWeakAnalysis.VPlusJets.TrackCollections_cfi")
 
 process.primaryVertexFilter.src = cms.InputTag("goodOfflinePrimaryVertices");
 process.primaryVertexFilter.cut = cms.string(" ");
+
+process.MetFilterStep = process.AllPassFilter.clone()
+
 
 ##-------- Muon events of interest --------
 
@@ -145,6 +165,8 @@ process.HLTMu = cms.EDFilter("HLTHighLevel",
                               andOr = cms.bool(True), #----- True = OR, False = AND between the HLTPaths
                               throw = cms.bool(False) # throw exception on unknown path names
                             )
+
+process.HLTMuFilterStep = process.AllPassFilter.clone()
 
 for path in options.hltPath.split(",") :    
     process.HLTMu.HLTPaths.append(path.replace(' ',''))
@@ -186,12 +208,17 @@ patElectronCollection = cms.InputTag("selectedPatElectronsPFlow")
 if options.isHEEPID:
     pTCutValue = 50.
     pTCutLooseMuonVeto = 20.
+    pTCutLooseElectronVeto = 20.
 
 else :
     pTCutValue = 20.
     pTCutLooseMuonVeto = 20.
+    pTCutLooseElectronVeto = 20.
     
 TransverseMassCutValue = 30.
+
+patTypeICorrectedMetSysShifted = []
+patTypeICorrectedMetSysShifted.append('patMETsPFlowSysShifted')
 
 WmunuCollectionsPAT(process,
                     patMuonCollection ,
@@ -201,9 +228,10 @@ WmunuCollectionsPAT(process,
                     options.isHEEPID,
                     pTCutValue,
                     pTCutLooseMuonVeto,
+                    pTCutLooseElectronVeto,
                     options.isTransverseMassCut,
                     TransverseMassCutValue,
-                    patTypeIMetCorrected)
+                    patTypeICorrectedMetSysShifted)
 
 
 ##############################################
@@ -237,7 +265,7 @@ process.RequireTwoJetsORboostedV = cms.EDFilter("JetsORboostedV",
                                                  maxNumber = cms.untracked.int32(100),
                                                  srcJets = cms.InputTag("ak5PFJetsPtSkimmed"),
                                                  srcVectorBoson = cms.InputTag("bestWmunu"),
-                                                 srcPhotons = cms.InputTag("selectedPatPhotons"),
+                                                 srcPhotons = cms.InputTag("cleanPatPhotons"),
                                                  minVpt = cms.untracked.double(100.),
                                                  minNumberPhotons = cms.untracked.int32(0))
 
@@ -298,27 +326,47 @@ process.RequireTwoJetsORboostedVStep = process.AllPassFilter.clone()
 
 
 
-process.myseq = cms.Sequence( process.TrackVtxPath *
+process.myseq = cms.Sequence( process.AllEventsStep*
+                              process.TrackVtxPath *
+                              process.MetFilterStep*
                               process.HLTMu*
+                              process.HLTMuFilterStep*                              
                               process.metShiftSystematicCorrectionSequence*
                               process.WPath*
                               process.GenJetPath*
                               process.genTagJetPath*
                               process.ak5PFJetPath*
-                              process.RequireTwoJetsORboostedV
+                              process.RequireTwoJetsORboostedV*
+                              process.RequireTwoJetsORboostedVStep
                               )                             
 
 
 if options.isMC:
      process.myseq.remove ( process.HLTMu)
+     process.myseq.remove ( process.HLTMuFilterStep)
 else:
      process.myseq.remove ( process.GenJetPath)
      process.myseq.remove ( process.genTagJetPath)
 
 if not options.runMetFilters :
     process.myseq.remove(process.TrackVtxPath)
+    process.myseq.remove(process.MetFilterStep)
 
+if options.skipAnalyzerAndDumpOutput :
+    process.myseq.remove(process.AllEventsStep)
+    process.myseq.remove(process.MetFilterStep)
+    process.myseq.remove(process.HLTMuFilterStep)
+    process.myseq.remove(process.RequireTwoJetsORboostedVStep)
+    process.ak5PFJetPath.remove(process.RequireTwoJetsStep)
+    process.WSequence.remove(process.tightLeptonStep)
+    process.WSequence.remove(process.bestWToLepnuStep)
+    process.VetoSequence.remove(process.looseMuonStep)
+    process.VetoSequence.remove(process.looseElectronStep)
+    
 process.p = cms.Path( process.myseq)
+
+if options.skipAnalyzerAndDumpOutput :
+ process.EndPath = cms.EndPath(process.output)
 
 ############################
 ## Dump the output Python ##
