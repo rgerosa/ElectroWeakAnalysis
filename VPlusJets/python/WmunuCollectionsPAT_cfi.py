@@ -10,11 +10,10 @@ def WmunuCollectionsPAT(process,
                         isHEEPID,
                         pTCutValue,
                         pTCutLooseMuonVeto,
+                        pTCutLooseElectronVeto,                        
                         isTransverseMassCut,
                         TransverseMassCutValue,
-                        patTypeICorrectedMet):
-
-
+                        patTypeICorrectedMetSysShifted):
 
 
  isMuonAnalyzer = True
@@ -33,9 +32,10 @@ def WmunuCollectionsPAT(process,
  print "run the High pT muon ID instead of Tight  Muon ID   = %d"%isHEEPID
  print "chosen pT threshold for the ID                      = %f"%pTCutValue
  print "chosen pT threshold for loose muon veto             = %f"%pTCutLooseMuonVeto
+ print "chosen pT threshold for loose Electron veto         = %f"%pTCutLooseElectronVeto
  print "apply tranverse mass cut                            = %d"%isTransverseMassCut
  print "transverse mass cut value                           = %f"%TransverseMassCutValue
- print "patTypeICorrectedMet                                = %s"%patTypeICorrectedMet
+ print "patTypeICorrectedMetSysShifted                      = %s"%patTypeICorrectedMetSysShifted
  print "                                      "
              
 
@@ -86,7 +86,7 @@ def WmunuCollectionsPAT(process,
 
  ## produce the leptonic W candidate from reco Objects --> tight muon and corrected met Type I
  process.WToMunu = cms.EDProducer("CandViewShallowCloneCombiner",
-                                   decay = cms.string("tightMuons "+patTypeICorrectedMet[0]),
+                                   decay = cms.string("tightMuons "+patTypeICorrectedMetSysShifted[0]),
                                    cut = cms.string('daughter(0).pt >%f && daughter(1).pt >%f && sqrt(2*daughter(0).pt*daughter(1).pt*(1-cos(daughter(0).phi-'
                                                     'daughter(1).phi)))>0'%(pTCutValue,pTCutValue)), 
                                    checkCharge = cms.bool(False))
@@ -106,12 +106,15 @@ def WmunuCollectionsPAT(process,
 
  from ElectroWeakAnalysis.VPlusJets.LooseLeptonVetoPAT_cfi import LooseLeptonVetoPAT
 
+ patMuonCollection4LooseVeto = cms.InputTag('patTunePMuonPFlow')
+
  LooseLeptonVetoPAT(process,
                     isQCD,
                     isHEEPID,
                     isMuonAnalyzer,
-                    patMuonCollection,
+                    patMuonCollection4LooseVeto,
                     pTCutLooseMuonVeto,
+                    pTCutLooseElectronVeto,
                     patElectronCollection,
                     vertexCollection)
 
