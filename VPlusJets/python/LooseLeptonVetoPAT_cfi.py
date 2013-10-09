@@ -8,6 +8,7 @@ def LooseLeptonVetoPAT(process,
                        isMuonAnalyzer,
                        patMuonCollection,
                        pTCutLooseMuonVeto,
+                       pTCutLooseElectronVeto,
                        patElectronCollection = cms.InputTag("selectedPatElectronsPFlow"),
                        vertexCollection = cms.InputTag("goodOfflinePrimaryVertices"),
                        looseEleIdLabel="loose"):
@@ -27,6 +28,7 @@ def LooseLeptonVetoPAT(process,
  print "run the High pT muon ID and HEEP electron instead of Higgs ones   = %d"%isHEEPID
  print "flag to understand we are looking for W->munu or W->enu           = %d"%isMuonAnalyzer
  print "chosen pT threshold for loose muon veto                           = %f"%pTCutLooseMuonVeto
+ print "chosen pT threshold for loose electron veto                       = %f"%pTCutLooseElectronVeto
  print "id label considered for loose electron veto                       = %s"%looseEleIdLabel
  print "                                      "
 
@@ -35,8 +37,8 @@ def LooseLeptonVetoPAT(process,
 
    ## produce loose muon collection
    process.looseMuons = cms.EDFilter("PATMuonRefSelector",
-                                                  src = patMuonCollection,
-                                                  cut = cms.string(""))
+                                      src = patMuonCollection,
+                                      cut = cms.string(""))
 
    ## set the cut to the loose Hight pT muon ID
    process.looseMuons.cut = cms.string(" isGlobalMuon && isTrackerMuon && pt>%f && abs(eta) < 2.4 && abs(phi)<3.2 && trackIso/pt < 0.1 && abs(dB) <0.2"
@@ -66,7 +68,7 @@ def LooseLeptonVetoPAT(process,
    process.looseElectrons = cms.EDProducer("HEEPElectronProducer",
                                             electronCollection = patElectronCollection,
                                             eleIdType = cms.string("LooseID"),
-                                            pTCutValue = cms.double(20.))
+                                            pTCutValue = cms.double(pTCutLooseElectronVeto))
 
    if isMuonAnalyzer :
      process.looseElectrons.electronCollection = cms.InputTag("heepPatElectronsPFlow")
@@ -113,7 +115,7 @@ def LooseLeptonVetoPAT(process,
   process.looseElectrons = cms.EDProducer("PATElectronIdSelector",
                                            src = patElectronCollection,
                                            idLabel = cms.string(looseEleIdLabel),
-                                           useMVAbasedID_   = cms.bool(True))
+                                           useMVAbasedID  = cms.bool(True))
 
   ##  Define loose muon selection for veto ######
   process.looseMuons = cms.EDFilter("PATMuonRefSelector",
