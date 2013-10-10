@@ -17,8 +17,9 @@ def runMetUncertainty(process,
                       patPhotonCollection,
                       patUnclusteredCandidate,
                       TypeIpatMetcollection,
-                      doTauSmearing,
-                      doPhotonSmearing
+                      doTauSystematic,
+                      doPhotonSystematic,
+                      saveOnlySmearedMetInfo
                       ):
 
  print "                                                               "
@@ -38,7 +39,10 @@ def runMetUncertainty(process,
  print "patPhotonCollection     = %s"%patPhotonCollection
  print "patUnclusteredCandidate = %s"%patUnclusteredCandidate
  print "TypeIpatMetcollection   = %s"%TypeIpatMetcollection
-
+ print "doTauSystematic         = %d"%doTauSystematic
+ print "doTauSystematic         = %d"%doPhotonSystematic
+ print "saveOnlySmearedMetInfo  = %d"%saveOnlySmearedMetInfo
+ 
 
  ##### Additional Info for MC Jet Smearing  
  resolutionFile = cms.FileInPath('PhysicsTools/PatUtils/data/pfJetResolutionMCtoDataCorrLUT.root') ### file for Jet Resolution Smearing on the MC
@@ -185,7 +189,7 @@ def runMetUncertainty(process,
 
  process.smearedPatJetsPFlowResUp = process.smearedPatJetsPFlow.clone(shiftBy = cms.double(1.0))
 
- if doSmearing and not useData:
+ if doSmearing :
      
   process.patJetSmearingSequence = cms.Sequence(process.smearedPatJetsPFlow*
                                                 process.smearedPatJetsPFlowResDown*
@@ -208,12 +212,18 @@ def runMetUncertainty(process,
 
  process.shiftedPatJetsPFlowEnDown         = process.shiftedPatJetsPFlowEnUp.clone(shiftBy = cms.double(-1.0))
 
- if doSmearing and not useData :
+ if doSmearing :
      
        process.shiftJetsForMetUncertainty = cms.Sequence(process.shiftedSmearedPatJetsPFlowEnUp*
                                                          process.shiftedSmearedPatJetsPFlowEnDown*
                                                          process.shiftedPatJetsPFlowEnUp*
                                                          process.shiftedPatJetsPFlowEnDown)
+
+       if saveOnlySmearedMetInfo :
+
+           process.shiftJetsForMetUncertainty.remove(process.shiftedPatJetsPFlowEnUp)
+           process.shiftJetsForMetUncertainty.remove(process.shiftedPatJetsPFlowEnDown)
+           
  else:
        process.shiftJetsForMetUncertainty = cms.Sequence(process.shiftedPatJetsPFlowEnUp*
                                                          process.shiftedPatJetsPFlowEnDown)
@@ -251,13 +261,12 @@ def runMetUncertainty(process,
      process.smearedPatElectronsPFlowResDown = process.smearedPatElectronsPFlow.clone(shiftBy = cms.double(-1.0))
 
 
- if doSmearing and not useData:
      
-  process.smearedElectronsForMetUncertainty = cms.Sequence(process.smearedPatElectronsPFlow) 
+ process.smearedElectronsForMetUncertainty = cms.Sequence(process.smearedPatElectronsPFlow) 
 
-  if EleEnergyResUncEB !=0  or EleEnergyResUncEE !=0 :
+ if EleEnergyResUncEB !=0  or EleEnergyResUncEE !=0 :
 
-      process.smearedElectronsForMetUncertainty += process.smearedPatElectronsPFlowResUp*process.smearedPatElectronsPFlowResDown
+  process.smearedElectronsForMetUncertainty += process.smearedPatElectronsPFlowResUp*process.smearedPatElectronsPFlowResDown
    
  
  ########## Shift muons
@@ -282,13 +291,12 @@ def runMetUncertainty(process,
      process.smearedPatMuonsPFlowResUp   = process.smearedPatMuonsPFlow.clone(shiftBy = cms.double(1.0))
      process.smearedPatMuonsPFlowResDown = process.smearedPatMuonsPFlow.clone(shiftBy = cms.double(-1.0))
 
- if doSmearing and not useData:
      
-  process.smearedMuonsForMetUncertainty = cms.Sequence(process.smearedPatMuonsPFlow) 
+ process.smearedMuonsForMetUncertainty = cms.Sequence(process.smearedPatMuonsPFlow) 
 
-  if MuonEnergyResUnc !=0:
+ if MuonEnergyResUnc !=0:
 
-      process.smearedMuonsForMetUncertainty += process.smearedPatMuonsPFlowResUp*process.smearedPatMuonsPFlowResDown
+  process.smearedMuonsForMetUncertainty += process.smearedPatMuonsPFlowResUp*process.smearedPatMuonsPFlowResDown
 
  ############ Shift taus
  process.shiftedPatTausPFlowEnUp = cms.EDProducer("ShiftedPATTauProducer",
@@ -311,13 +319,12 @@ def runMetUncertainty(process,
      process.smearedPatTausPFlowResUp   = process.smearedPatTausPFlow.clone(shiftBy = cms.double(1.0))
      process.smearedPatTausPFlowResDown = process.smearedPatTausPFlow.clone(shiftBy = cms.double(-1.0))
 
- if doSmearing and not useData: 
 
-  process.smearedTausForMetUncertainty = cms.Sequence(process.smearedPatTausPFlow) 
+ process.smearedTausForMetUncertainty = cms.Sequence(process.smearedPatTausPFlow) 
 
-  if TauEnergyResUnc !=0  :
+ if TauEnergyResUnc !=0  :
 
-   process.smearedTausForMetUncertainty += process.smearedPatTausPFlowResUp*process.smearedPatTausPFlowResDown
+  process.smearedTausForMetUncertainty += process.smearedPatTausPFlowResUp*process.smearedPatTausPFlowResDown
 
  ############ Shift photon
  process.shiftedPatPhotonPFlowEnUp = cms.EDProducer("ShiftedPATPhotonProducer",
@@ -350,11 +357,10 @@ def runMetUncertainty(process,
      process.smearedPatPhotonPFlowResUp   = process.smearedPatPhotonPFlow.clone(shiftBy = cms.double(1.0))
      process.smearedPatPhotonPFlowResDown = process.smearedPatPhotonPFlow.clone(shiftBy = cms.double(-1.0))
 
- if doSmearing and not useData: 
+ 
+ process.smearedPhotonForMetUncertainty = cms.Sequence(process.smearedPatPhotonPFlow) 
 
-  process.smearedPhotonForMetUncertainty = cms.Sequence(process.smearedPatPhotonPFlow) 
-
-  if PhotonEnergyResUncEB !=0  or PhotonEnergyResUncEE !=0 :
+ if PhotonEnergyResUncEB !=0  or PhotonEnergyResUncEE !=0 :
 
    process.smearedPhotonForMetUncertainty += process.smearedPatPhotonPFlowResUp*process.smearedPatPhotonPFlowResDown
 
@@ -397,7 +403,7 @@ def runMetUncertainty(process,
                                                          type0Rsoft = cms.double(0.6),
                                                          applyType0Corrections = cms.bool(False))
 
- if doSmearing and not useData:
+ if doSmearing :
   process.patType1CorrectedPFSmearedMetForMetUncertainty = cms.Sequence(process.patPFSmearedJetMETtype1Corr*
                                                                         process.patType1CorrectedPFSmearedMet)
 
@@ -414,13 +420,19 @@ def runMetUncertainty(process,
 
  process.patPFMETcorrJetEnDown        = process.patPFMETcorrJetEnUp.clone(srcShifted = cms.InputTag("shiftedPatJetsPFlowEnDown"))
 
- if doSmearing and not useData :
+ if doSmearing :
+     
       process.patPFMETcorrJetForMetUncertainty = cms.Sequence( process.patPFMETcorrSmearedJetEnUp*
                                                                process.patPFMETcorrSmearedJetEnDown*
                                                                process.patPFMETcorrJetEnUp*
                                                                process.patPFMETcorrJetEnDown)
+      if saveOnlySmearedMetInfo :
+
+          process.patPFMETcorrJetForMetUncertainty.remove(process.patPFMETcorrJetEnUp)
+          process.patPFMETcorrJetForMetUncertainty.remove(process.patPFMETcorrJetEnDown)
       
  else :
+
       process.patPFMETcorrJetForMetUncertainty = cms.Sequence( process.patPFMETcorrJetEnUp*
                                                                process.patPFMETcorrJetEnDown)
       
@@ -439,13 +451,19 @@ def runMetUncertainty(process,
  process.patType1CorrectedPFMetJetEnDown        = process.patType1CorrectedPFSmearedMetJetEnUp.clone( src = TypeIpatMetcollection,
                                                                                                       srcType1Corrections = cms.VInputTag(cms.InputTag("patPFMETcorrJetEnDown")))
 
- if doSmearing and not useData :
+ if doSmearing :
     process.patType1CorrectedPFMetJetForMetUncertainty = cms.Sequence(process.patType1CorrectedPFSmearedMetJetEnUp*
                                                                       process.patType1CorrectedPFSmearedMetJetEnDown*
                                                                       process.patType1CorrectedPFMetJetEnUp*
                                                                       process.patType1CorrectedPFMetJetEnDown)
-    
+
+    if saveOnlySmearedMetInfo :
+
+        process.patType1CorrectedPFMetJetForMetUncertainty.remove(process.patType1CorrectedPFMetJetEnUp)
+        process.patType1CorrectedPFMetJetForMetUncertainty.remove(process.patType1CorrectedPFMetJetEnDown)
+        
  else:
+     
     process.patType1CorrectedPFMetJetForMetUncertainty = cms.Sequence(process.patType1CorrectedPFMetJetEnUp*
                                                                       process.patType1CorrectedPFMetJetEnDown)
 
@@ -465,7 +483,7 @@ def runMetUncertainty(process,
 
  process.patType1CorrectedPFSmearedMetJetResDown = process.patType1CorrectedPFSmearedMetJetResUp.clone(srcType1Corrections = cms.VInputTag(cms.InputTag("patPFMETcorrSmearedJetResDown")))
 
- if doSmearing and not useData:
+ if doSmearing :
     process.patType1CorrectedPFMetJetResForMetUncertainty =   cms.Sequence( process.patPFMETcorrSmearedJetResUp*
                                                                             process.patPFMETcorrSmearedJetResDown*
                                                                             process.patType1CorrectedPFSmearedMetJetResUp*
@@ -510,22 +528,23 @@ def runMetUncertainty(process,
 
  process.patType1CorrectedPFSmearedMetUnclusteredEnDown  =  process.patType1CorrectedPFMetUnclusteredEnDown.clone(src = cms.InputTag("patType1CorrectedPFSmearedMet"))
 
- if doSmearing and not useData :
-      process.patType1CorrectedPFMetUnclusteredForMetUncertainty = cms.Sequence(process.pfCandMETcorrUnclusteredEnUp*
-                                                                                process.pfCandMETcorrUnclusteredEnDown*
-                                                                                process.patPFJetMETcorrUnclusteredEnUp*
-                                                                                process.patPFJetMETcorrUnclusteredEnDown*
-                                                                                process.patType1CorrectedPFMetUnclusteredEnUp*
-                                                                                process.patType1CorrectedPFMetUnclusteredEnDown*
-                                                                                process.patType1CorrectedPFSmearedMetUnclusteredEnUp*
-                                                                                process.patType1CorrectedPFSmearedMetUnclusteredEnDown)
- else:
-     process.patType1CorrectedPFMetUnclusteredForMetUncertainty = cms.Sequence(process.pfCandMETcorrUnclusteredEnUp*
-                                                                               process.pfCandMETcorrUnclusteredEnDown*
-                                                                               process.patPFJetMETcorrUnclusteredEnUp*
-                                                                               process.patPFJetMETcorrUnclusteredEnDown*
-                                                                               process.patType1CorrectedPFMetUnclusteredEnUp*
-                                                                               process.patType1CorrectedPFMetUnclusteredEnDown)
+ 
+ process.patType1CorrectedPFMetUnclusteredForMetUncertainty = cms.Sequence(process.pfCandMETcorrUnclusteredEnUp*
+                                                                           process.pfCandMETcorrUnclusteredEnDown*
+                                                                           process.patPFJetMETcorrUnclusteredEnUp*
+                                                                           process.patPFJetMETcorrUnclusteredEnDown*
+                                                                           process.patType1CorrectedPFMetUnclusteredEnUp*
+                                                                           process.patType1CorrectedPFMetUnclusteredEnDown)
+ if doSmearing :
+          
+    process.patType1CorrectedPFMetUnclusteredForMetUncertainty += process.patType1CorrectedPFSmearedMetUnclusteredEnUp
+    process.patType1CorrectedPFMetUnclusteredForMetUncertainty += process.patType1CorrectedPFSmearedMetUnclusteredEnDown
+
+    if saveOnlySmearedMetInfo :
+
+     process.patType1CorrectedPFMetUnclusteredForMetUncertainty.remove(process.patType1CorrectedPFMetUnclusteredEnUp)
+     process.patType1CorrectedPFMetUnclusteredForMetUncertainty.remove(process.patType1CorrectedPFMetUnclusteredEnDown)
+          
 
       
  ############### electrons contribution to met 
@@ -548,20 +567,23 @@ def runMetUncertainty(process,
 
  process.patType1CorrectedPFSmearedMetElectronEnDown  = process.patType1CorrectedPFMetElectronEnDown.clone(src = cms.InputTag("patType1CorrectedPFSmearedMet"))
 
- if doSmearing and not useData :
+ if doSmearing :
       process.patType1CorrectedPFMetElectronEnForMetUncertainty = cms.Sequence( process.patPFMETcorrElectronEnUp*
                                                                                 process.patPFMETcorrElectronEnDown*
                                                                                 process.patType1CorrectedPFMetElectronEnUp*
                                                                                 process.patType1CorrectedPFMetElectronEnDown*
                                                                                 process.patType1CorrectedPFSmearedMetElectronEnUp*
-                                                                                process.patType1CorrectedPFSmearedMetElectronEnDown
-                                                                              )  
+                                                                                process.patType1CorrectedPFSmearedMetElectronEnDown)
+
+      if saveOnlySmearedMetInfo :
+             process.patType1CorrectedPFMetElectronEnForMetUncertainty.remove(process.patType1CorrectedPFMetElectronEnUp)
+             process.patType1CorrectedPFMetElectronEnForMetUncertainty.remove(process.patType1CorrectedPFMetElectronEnDown)
+             
  else:
       process.patType1CorrectedPFMetElectronEnForMetUncertainty = cms.Sequence( process.patPFMETcorrElectronEnUp*
                                                                                 process.patPFMETcorrElectronEnDown*
                                                                                 process.patType1CorrectedPFMetElectronEnUp*
-                                                                                process.patType1CorrectedPFMetElectronEnDown
-                                                                              )  
+                                                                                process.patType1CorrectedPFMetElectronEnDown)  
 
  ## electron energy resolution
  process.patPFMETcorrElectronRes = cms.EDProducer("ShiftedParticleMETcorrInputProducer",
@@ -572,11 +594,9 @@ def runMetUncertainty(process,
  process.patPFMETcorrElectronResUp   = process.patPFMETcorrElectronRes.clone(srcShifted = cms.InputTag("smearedPatElectronsPFlowResUp"))
  process.patPFMETcorrElectronResDown = process.patPFMETcorrElectronRes.clone(srcShifted = cms.InputTag("smearedPatElectronsPFlowResDown"))
 
- if doSmearing and not useData:
+ process.patPFMETcorrElectronResForMetUncertainty = cms.Sequence(process.patPFMETcorrElectronRes)
 
-   process.patPFMETcorrElectronResForMetUncertainty = cms.Sequence(process.patPFMETcorrElectronRes)
-
-   if EleEnergyResUncEB !=0  or EleEnergyResUncEE !=0 :
+ if EleEnergyResUncEB !=0  or EleEnergyResUncEE !=0 :
 
     process.patPFMETcorrElectronResForMetUncertainty += process.patPFMETcorrElectronResUp*process.patPFMETcorrElectronResDown   
 
@@ -598,14 +618,26 @@ def runMetUncertainty(process,
                                                                                                                cms.VInputTag(cms.InputTag("patPFMETcorrElectronResUp")))
  process.patType1CorrectedPFSmearedMetElectronResDown = process.patType1CorrectedPFSmearedMetElectronRes.clone(srcType1Corrections =
                                                                                                                cms.VInputTag(cms.InputTag("patPFMETcorrElectronResDown")))
-   
- if doSmearing and not useData:
-     process.patType1CorrectedPFMetElectronResForMetUncertainty = cms.Sequence(process.patType1CorrectedPFMetElectronRes*
-                                                                               process.patType1CorrectedPFSmearedMetElectronRes)
 
+
+ process.patType1CorrectedPFMetElectronResForMetUncertainty = cms.Sequence(process.patType1CorrectedPFMetElectronRes)
+
+ if EleEnergyResUncEB !=0  or EleEnergyResUncEE !=0 :
+    process.patType1CorrectedPFMetElectronResForMetUncertainty += process.patType1CorrectedPFMetElectronResUp*process.patType1CorrectedPFMetElectronResDown
+                                                                               
+ if doSmearing :
+     process.patType1CorrectedPFMetElectronResForMetUncertainty += process.patType1CorrectedPFSmearedMetElectronRes
+
+     if saveOnlySmearedMetInfo :
+         process.patType1CorrectedPFMetElectronResForMetUncertainty.remove(process.patType1CorrectedPFMetElectronRes)
+  
      if EleEnergyResUncEB !=0  or EleEnergyResUncEE !=0 :
-         process.patType1CorrectedPFMetElectronResForMetUncertainty += process.patType1CorrectedPFMetElectronResUp*process.patType1CorrectedPFMetElectronResDown
          process.patType1CorrectedPFMetElectronResForMetUncertainty += process.patType1CorrectedPFSmearedMetElectronResUp*process.patType1CorrectedPFSmearedMetElectronResDown
+
+         if saveOnlySmearedMetInfo :          
+          process.patType1CorrectedPFMetElectronResForMetUncertainty.remove(process.patType1CorrectedPFMetElectronResUp)
+          process.patType1CorrectedPFMetElectronResForMetUncertainty.remove(process.patType1CorrectedPFMetElectronResDown)
+         
 
                   
  ######### muons contribution to met 
@@ -627,13 +659,19 @@ def runMetUncertainty(process,
 
  process.patType1CorrectedPFMetMuonEnDown         = process.patType1CorrectedPFSmearedMetMuonEnDown.clone(src = TypeIpatMetcollection)
 
- if doSmearing and not useData :
+ if doSmearing :
       process.patType1CorrectedPFMetMuonEnForMetUncertainty = cms.Sequence(process.patPFMETcorrMuonEnUp*
                                                                            process.patPFMETcorrMuonEnDown*
                                                                            process.patType1CorrectedPFSmearedMetMuonEnUp*
                                                                            process.patType1CorrectedPFSmearedMetMuonEnDown*
                                                                            process.patType1CorrectedPFMetMuonEnUp*
                                                                            process.patType1CorrectedPFMetMuonEnDown)
+      
+      if saveOnlySmearedMetInfo :
+
+          process.patType1CorrectedPFMetMuonEnForMetUncertainty.remove(process.patType1CorrectedPFMetMuonEnUp)
+          process.patType1CorrectedPFMetMuonEnForMetUncertainty.remove(process.patType1CorrectedPFMetMuonEnDown)
+          
  else:
       process.patType1CorrectedPFMetMuonEnForMetUncertainty = cms.Sequence(process.patPFMETcorrMuonEnUp*
                                                                            process.patPFMETcorrMuonEnDown*
@@ -665,15 +703,27 @@ def runMetUncertainty(process,
 
  process.patType1CorrectedPFSmearedMetMuonResDown = process.patType1CorrectedPFSmearedMetMuonRes.clone(srcType1Corrections = cms.VInputTag(cms.InputTag("patPFMETcorrMuonResDown")))
 
- if doSmearing and not useData:
-     process.patType1CorrectedPFMetMuonResForMetUncertainty = cms.Sequence(process.patPFMETcorrMuonRes*
-                                                                           process.patType1CorrectedPFMetMuonRes*
-                                                                           process.patType1CorrectedPFSmearedMetMuonRes)
-     if MuonEnergyResUnc !=0:
-         process.patType1CorrectedPFMetMuonResForMetUncertainty += process.patPFMETcorrMuonResUp*process.patPFMETcorrMuonResDown
-         process.patType1CorrectedPFMetMuonResForMetUncertainty += process.patType1CorrectedPFMetMuonResUp*process.patType1CorrectedPFMetMuonResDown
-         process.patType1CorrectedPFMetMuonResForMetUncertainty += process.patType1CorrectedPFSmearedMetMuonResUp*process.patType1CorrectedPFSmearedMetMuonResDown
+ process.patType1CorrectedPFMetMuonResForMetUncertainty = cms.Sequence(process.patPFMETcorrMuonRes*
+                                                                       process.patType1CorrectedPFMetMuonRes)
+
+ if MuonEnergyResUnc !=0:
+    process.patType1CorrectedPFMetMuonResForMetUncertainty += process.patPFMETcorrMuonResUp*process.patPFMETcorrMuonResDown
+    process.patType1CorrectedPFMetMuonResForMetUncertainty += process.patType1CorrectedPFMetMuonResUp*process.patType1CorrectedPFMetMuonResDown
+
+ if doSmearing :
+     process.patType1CorrectedPFMetMuonResForMetUncertainty += process.patType1CorrectedPFSmearedMetMuonRes
+
+     if saveOnlySmearedMetInfo :
+           process.patType1CorrectedPFMetMuonResForMetUncertainty.remove(process.patType1CorrectedPFMetMuonRes)
          
+     if MuonEnergyResUnc !=0:
+         process.patType1CorrectedPFMetMuonResForMetUncertainty += process.patType1CorrectedPFSmearedMetMuonResUp*process.patType1CorrectedPFSmearedMetMuonResDown
+
+         if saveOnlySmearedMetInfo :
+
+             process.patType1CorrectedPFMetMuonResForMetUncertainty.remove(process.patType1CorrectedPFMetMuonResUp)
+             process.patType1CorrectedPFMetMuonResForMetUncertainty.remove(process.patType1CorrectedPFMetMuonResDown)
+             
                                                                            
  ############# taus contribution to the met
  process.patPFMETcorrTausEnUp = cms.EDProducer("ShiftedParticleMETcorrInputProducer",
@@ -695,13 +745,19 @@ def runMetUncertainty(process,
 
  process.patType1CorrectedPFMetTausEnDown = process.patType1CorrectedPFSmearedMetTausEnDown.clone(src = TypeIpatMetcollection)
 
- if doSmearing and not useData :
+ if doSmearing :
       process.patType1CorrectedPFMetTausEnForMetUncertainty = cms.Sequence(process.patPFMETcorrTausEnUp*
                                                                            process.patPFMETcorrTausEnDown*
                                                                            process.patType1CorrectedPFSmearedMetTausEnUp*
                                                                            process.patType1CorrectedPFSmearedMetTausEnDown*
                                                                            process.patType1CorrectedPFMetTausEnUp*
                                                                            process.patType1CorrectedPFMetTausEnDown)
+
+      if saveOnlySmearedMetInfo :
+
+          process.patType1CorrectedPFMetTausEnForMetUncertainty.remove(process.patType1CorrectedPFMetTausEnUp)
+          process.patType1CorrectedPFMetTausEnForMetUncertainty.remove(process.patType1CorrectedPFMetTausEnDown)
+          
  else:
       process.patType1CorrectedPFMetTausEnForMetUncertainty = cms.Sequence(process.patPFMETcorrTausEnUp*
                                                                            process.patPFMETcorrTausEnDown*
@@ -736,19 +792,32 @@ def runMetUncertainty(process,
  process.patType1CorrectedPFSmearedMetTauResDown = process.patType1CorrectedPFSmearedMetTauRes.clone(srcType1Corrections = cms.VInputTag(cms.InputTag("patPFMETcorrTauResDown")))
      
  
- if doSmearing and not useData:
+ if doSmearing :
     
      process.patType1CorrectedPFMetTauResForMetUncertainty = cms.Sequence(process.patPFMETcorrTauRes*
                                                                           process.patType1CorrectedPFMetTauRes*
                                                                           process.patType1CorrectedPFSmearedMetTauRes)
-
+     
+     if saveOnlySmearedMetInfo :
+         process.patType1CorrectedPFMetTauResForMetUncertainty.remove(process.patType1CorrectedPFMetTauRes)
+         
      if TauEnergyResUnc != 0:
          
       process.patType1CorrectedPFMetTauResForMetUncertainty += process.patPFMETcorrTauResUp*process.patPFMETcorrTauResDown
       process.patType1CorrectedPFMetTauResForMetUncertainty += process.patType1CorrectedPFMetTauResUp*process.patType1CorrectedPFMetTauResDown
       process.patType1CorrectedPFMetTauResForMetUncertainty += process.patType1CorrectedPFSmearedMetTauResUp*process.patType1CorrectedPFSmearedMetTauResDown
       
-      
+ else:
+
+     process.patType1CorrectedPFMetTauResForMetUncertainty = cms.Sequence(process.patPFMETcorrTauRes*
+                                                                          process.patType1CorrectedPFMetTauRes)
+
+     if TauEnergyResUnc != 0:
+         
+       process.patType1CorrectedPFMetTauResForMetUncertainty += process.patPFMETcorrTauResUp*process.patPFMETcorrTauResDown
+       process.patType1CorrectedPFMetTauResForMetUncertainty += process.patType1CorrectedPFMetTauResUp*process.patType1CorrectedPFMetTauResDown
+                     
+
 
  ############# photon contribution to the met
  process.patPFMETcorrPhotonEnUp = cms.EDProducer("ShiftedParticleMETcorrInputProducer",
@@ -770,13 +839,18 @@ def runMetUncertainty(process,
 
  process.patType1CorrectedPFMetPhotonEnDown = process.patType1CorrectedPFSmearedMetPhotonEnDown.clone(src = TypeIpatMetcollection)
 
- if doSmearing and not useData :
+ if doSmearing :
       process.patType1CorrectedPFMetPhotonEnForMetUncertainty = cms.Sequence(process.patPFMETcorrPhotonEnUp*
                                                                              process.patPFMETcorrPhotonEnDown*
                                                                              process.patType1CorrectedPFSmearedMetPhotonEnUp*
                                                                              process.patType1CorrectedPFSmearedMetPhotonEnDown*
                                                                              process.patType1CorrectedPFMetPhotonEnUp*
                                                                              process.patType1CorrectedPFMetPhotonEnDown)
+      if saveOnlySmearedMetInfo :
+
+           process.patType1CorrectedPFMetPhotonEnForMetUncertainty.remove(process.patType1CorrectedPFMetPhotonEnUp)
+           process.patType1CorrectedPFMetPhotonEnForMetUncertainty.remove(process.patType1CorrectedPFMetPhotonEnDown)
+
  else:
       process.patType1CorrectedPFMetPhotonEnForMetUncertainty = cms.Sequence(process.patPFMETcorrPhotonEnUp*
                                                                              process.patPFMETcorrPhotonEnDown*
@@ -808,21 +882,36 @@ def runMetUncertainty(process,
  process.patType1CorrectedPFSmearedMetPhotonResDown = process.patType1CorrectedPFSmearedMetPhotonRes.clone(srcType1Corrections = cms.VInputTag(cms.InputTag("patPFMETcorrPhotonResDown")))
      
  
- if doSmearing and not useData:
+ if doSmearing :
     
      process.patType1CorrectedPFMetPhotonResForMetUncertainty = cms.Sequence(process.patPFMETcorrPhotonRes*
                                                                              process.patType1CorrectedPFMetPhotonRes*
                                                                              process.patType1CorrectedPFSmearedMetPhotonRes)
+
+     if saveOnlySmearedMetInfo :
+      process.patType1CorrectedPFMetPhotonResForMetUncertainty.remove(process.patType1CorrectedPFMetPhotonRes)
 
      if PhotonEnergyResUncEB != 0 or PhotonEnergyResUncEE != 0 :
       process.patType1CorrectedPFMetPhotonResForMetUncertainty += process.patPFMETcorrPhotonResUp*process.patPFMETcorrPhotonResDown
       process.patType1CorrectedPFMetPhotonResForMetUncertainty += process.patType1CorrectedPFMetPhotonResUp*process.patType1CorrectedPFMetPhotonResDown
       process.patType1CorrectedPFMetPhotonResForMetUncertainty += process.patType1CorrectedPFSmearedMetPhotonResUp*process.patType1CorrectedPFSmearedMetPhotonResDown
       
+      if saveOnlySmearedMetInfo :
+          process.patType1CorrectedPFMetPhotonResForMetUncertainty.remove(process.patType1CorrectedPFMetPhotonResUp)
+          process.patType1CorrectedPFMetPhotonResForMetUncertainty.remove(process.patType1CorrectedPFMetPhotonResDown)
 
+ else:
+
+     process.patType1CorrectedPFMetPhotonResForMetUncertainty = cms.Sequence(process.patPFMETcorrPhotonRes*
+                                                                             process.patType1CorrectedPFMetPhotonRes)
+
+     if PhotonEnergyResUncEB != 0 or PhotonEnergyResUncEE != 0 :
+         process.patType1CorrectedPFMetPhotonResForMetUncertainty += process.patPFMETcorrPhotonResUp*process.patPFMETcorrPhotonResDown
+         process.patType1CorrectedPFMetPhotonResForMetUncertainty += process.patType1CorrectedPFMetPhotonResUp*process.patType1CorrectedPFMetPhotonResDown
+                   
                
  #### Final Sequence        
- if doSmearing and not useData :
+ if doSmearing :
      process.metUncertainty = cms.Sequence(process.patJetSmearingSequence*
                                            process.shiftJetsForMetUncertainty*
                                            process.shiftElectronsForMetUncertainty*
@@ -850,30 +939,56 @@ def runMetUncertainty(process,
                                            process.patType1CorrectedPFMetPhotonEnForMetUncertainty*
                                            process.patType1CorrectedPFMetPhotonResForMetUncertainty                                           
                                            )
-     if not doTauSmearing :
+     if not doTauSystematic :
+        process.metUncertainty.remove(process.shiftTausForMetUncertainty)
         process.metUncertainty.remove(process.smearedTausForMetUncertainty)
+        process.metUncertainty.remove(process.patType1CorrectedPFMetTausEnForMetUncertainty)
         process.metUncertainty.remove(process.patType1CorrectedPFMetTauResForMetUncertainty)
 
-     if not doPhotonSmearing :
+     if not doPhotonSystematic :
+         
+        process.metUncertainty.remove(process.shiftPhotonForMetUncertainty)
         process.metUncertainty.remove(process.smearedPhotonForMetUncertainty)
         process.metUncertainty.remove(process.patType1CorrectedPFMetPhotonResForMetUncertainty)
-         
+        process.metUncertainty.remove(process.patType1CorrectedPFMetPhotonEnForMetUncertainty)
+
         
  else : 
      process.metUncertainty = cms.Sequence( process.shiftJetsForMetUncertainty*
                                             process.shiftElectronsForMetUncertainty*
+                                            process.smearedElectronsForMetUncertainty*
                                             process.shiftMuonsForMetUncertainty*
+                                            process.smearedMuonsForMetUncertainty*
                                             process.shiftTausForMetUncertainty*
+                                            process.smearedTausForMetUncertainty*
                                             process.shiftPhotonForMetUncertainty*
+                                            process.smearedPhotonForMetUncertainty*
                                             process.patMETforMetUncertainty*
                                             process.patPFMETcorrJetForMetUncertainty*
                                             process.patType1CorrectedPFMetJetForMetUncertainty*
                                             process.patType1CorrectedPFMetUnclusteredForMetUncertainty*
                                             process.patType1CorrectedPFMetElectronEnForMetUncertainty*
+                                            process.patPFMETcorrElectronResForMetUncertainty*
                                             process.patType1CorrectedPFMetMuonEnForMetUncertainty*
                                             process.patType1CorrectedPFMetTausEnForMetUncertainty*
-                                            process.patType1CorrectedPFMetPhotonEnForMetUncertainty
+                                            process.patType1CorrectedPFMetTauResForMetUncertainty*
+                                            process.patType1CorrectedPFMetPhotonEnForMetUncertainty*
+                                            process.patType1CorrectedPFMetPhotonResForMetUncertainty                                           
                                            )
+
+
+     if not doTauSystematic :
+        process.metUncertainty.remove(process.shiftTausForMetUncertainty)
+        process.metUncertainty.remove(process.smearedTausForMetUncertainty)
+        process.metUncertainty.remove(process.patType1CorrectedPFMetTausEnForMetUncertainty)
+        process.metUncertainty.remove(process.patType1CorrectedPFMetTauResForMetUncertainty)
+
+     if not doPhotonSystematic :
+         
+        process.metUncertainty.remove(process.shiftPhotonForMetUncertainty)
+        process.metUncertainty.remove(process.smearedPhotonForMetUncertainty)
+        process.metUncertainty.remove(process.patType1CorrectedPFMetPhotonResForMetUncertainty)
+        process.metUncertainty.remove(process.patType1CorrectedPFMetPhotonEnForMetUncertainty)
 
 
  process.patseq += process.metUncertainty   
@@ -912,11 +1027,19 @@ def runMetUncertainty(process,
                                     'keep *_shiftedPatMuonsPFlowEn*_*_*',
                                     'keep *_shiftedPatTausPFlowEn*_*_*',
                                     'keep *_shiftedPatPhotonPFlowEn*_*_*',
+                                    'keep *_smearedPatMuonsPFlow*_*_*',
+                                    'keep *_smearedPatElectronsPFlow*_*_*',
+                                    'keep *_smearedPatTausPFlow*_*_*',
+                                    'keep *_smearedPatPhotonPFlow*_*_*',                                    
                                     'keep *_patType1CorrectedPF*MetJetEnUp*_*_*',
                                     'keep *_patType1CorrectedPF*MetJetEnDown*_*_*',
                                     'keep *_patType1CorrectedPF*MetUnclusteredEn*_*_*',
                                     'keep *_patType1CorrectedPF*MetElectronEn*_*_*',
+                                    'keep *_patType1CorrectedPF*MetElectronRes*_*_*',
                                     'keep *_patType1CorrectedPF*MetMuonEn*_*_*',
+                                    'keep *_patType1CorrectedPF*MetMuonRes*_*_*',
                                     'keep *_patType1CorrectedPF*MetTausEn*_*_*',
+                                    'keep *_patType1CorrectedPF*MetTausRes*_*_*',
                                     'keep *_patType1CorrectedPF*MetPhotonEn*_*_*',
+                                    'keep *_patType1CorrectedPF*MetPhotonRes*_*_*',
                                     ]
