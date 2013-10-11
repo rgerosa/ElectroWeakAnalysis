@@ -1968,9 +1968,9 @@ if not options.useData and options.doMetUncertainty :
       process.puJetIdSequenceChs.remove(process.puSmearedJetMvaChsResUp)
       process.puJetIdSequenceChs.remove(process.puSmearedJetIdChsResDown)
       process.puJetIdSequenceChs.remove(process.puSmearedJetMvaChsResDown)
-      process.puJetIdSequenceChs.remove(rocess.pushiftedSmearedJetIdChsEnUp)
+      process.puJetIdSequenceChs.remove(process.pushiftedSmearedJetIdChsEnUp)
       process.puJetIdSequenceChs.remove(process.pushiftedSmearedJetMvaChsEnUp)
-      process.puJetIdSequenceChs.remove(rocess.pushiftedSmearedJetIdChsEnDown)
+      process.puJetIdSequenceChs.remove(process.pushiftedSmearedJetIdChsEnDown)
       process.puJetIdSequenceChs.remove(process.pushiftedSmearedJetMvaChsEnDown)
 
 
