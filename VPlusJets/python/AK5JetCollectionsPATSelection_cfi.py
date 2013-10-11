@@ -10,15 +10,17 @@ from RecoMET.METProducers.genMetTrue_cfi        import *
 
 ##########################################################################
 
-def AK5JetCollectionsPATSelection(process,                                  
+
+def AK5JetCollectionsPATSelection(process,
+                                  isMC,
                                   patJetCollection,
                                   patSmearedJetCollection,
                                   isPileUpJetID,
                                   useMVAPileUpJetID,
                                   useSmearedCollection,
+                                  storeSmearandShiftCollections,
                                   jetPtThreshold,
-                                  isRequireTwoJets,
-                                  isMC):
+                                  isRequireTwoJets):
 
 
  print "                                  "
@@ -28,14 +30,15 @@ def AK5JetCollectionsPATSelection(process,
  print "                                  "
 
  print "Chosen Options:                           "
+ print "is running on data or on MC                   = %d"%isMC
  print "input pat AK5 jet collection                  = %s"%patJetCollection
  print "input pat Smeared AK5 jet collection          = %s"%patSmearedJetCollection
  print "run Pile Up Jet ID                            = %d"%isPileUpJetID
  print "use the mva chs pile up jet id                = %d"%useMVAPileUpJetID 
  print "use Smeared jet collection for selections     = %d"%useSmearedCollection
+ print "run analysis also on shifted and smeared jets = %d"%storeSmearandShiftCollections
  print "jet pT threshold to be applied                = %f"%jetPtThreshold
  print "jet two separated jets --> resolved analysis  = %d"%isRequireTwoJets
- print "is running on data or on MC                   = %d"%isMC
  print "                                  "
 
 
@@ -167,6 +170,14 @@ def AK5JetCollectionsPATSelection(process,
    process.ak5PFJetPath += getattr(process,JetsPtSkimmedNameCentral)
    process.ak5PFJetPath += getattr(process,JetsPtSkimmedNameForward)           
 
+   if not storeSmearandShiftCollections:
+
+       process.ak5PFJetPath.remove(getattr(process,noPUJetName))
+       process.ak5PFJetPath.remove(getattr(process,cleanJetName))
+       process.ak5PFJetPath.remove(getattr(process,goodJetName))
+       process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedName))
+       process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedNameCentral))
+       process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedNameForward))
 
    if not isPileUpJetID :
        process.ak5PFJetPath.remove(getattr(process,noPUJetName))
@@ -247,11 +258,19 @@ def AK5JetCollectionsPATSelection(process,
     process.ak5PFJetPath += getattr(process,JetsPtSkimmedNameCentral)
     process.ak5PFJetPath += getattr(process,JetsPtSkimmedNameForward)           
 
+    if not storeSmearandShiftCollections and module != patSmearedJetCollection[0] :
 
+     process.ak5PFJetPath.remove(getattr(process,noPUJetName))
+     process.ak5PFJetPath.remove(getattr(process,goodJetName))
+     process.ak5PFJetPath.remove(getattr(process,cleanJetName))
+     process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedName))
+     process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedNameCentral))
+     process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedNameForward))           
+        
+        
     if not isPileUpJetID :
        process.ak5PFJetPath.remove(getattr(process,noPUJetName))
    
-
 
  ################################################
  ### Gen AK5 Jets and partons --> only for MC ###
