@@ -5,11 +5,10 @@ def metShiftSystematicCorrection(process,
                                  useSmearedCollection,
                                  runCorrection,
                                  vertexCollection,
-                                 didPhotonSmearing,
-                                 didTauSmearing,
+                                 didPhotonSystematic,
+                                 didTauSystematic,
                                  patTypeIMetCorrected,
-                                 patTypeIMetCorrectedNoSmeared,
-                                 patTypeIMetCorrectedSmeared):
+                                 patTypeIMetCorrectedForMetUncertainty):
 
 
 
@@ -24,66 +23,70 @@ def metShiftSystematicCorrection(process,
  print "useSmeardCollection                = %d"%useSmearedCollection
  print "RunCorrection to be applied        = %s"%runCorrection
  print "Vertex collection to be considered = %s"%vertexCollection
- print "Photon smearing has been done      = %d"%didPhotonSmearing
- print "Tau smearing has been done         = %d"%didTauSmearing
+ print "Photon systematic has been done    = %d"%didPhotonSystematic
+ print "Tau systematic has been done       = %d"%didTauSystematic
 
  process.load("JetMETCorrections.Type1MET.pfMETsysShiftCorrections_cfi")
 
  ######## Some basic parameters:
  patTypeIMetCorrected.append('patMETsPFlow')
 
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetElectronEnDown')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetElectronEnUp')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetElectronRes')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetElectronResDown')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetElectronResUp')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetJetEnDown')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetJetEnUp')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetMuonEnDown')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetMuonEnUp')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetMuonRes')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetMuonResDown') 
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetMuonResUp')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetPhotonEnDown')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetPhotonEnUp')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetPhotonRes')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetPhotonResDown')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetPhotonResUp')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetTauRes')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetTauResDown')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetTauResUp')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetTausEnDown')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetTausEnUp')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetUnclusteredEnDown')
- patTypeIMetCorrectedNoSmeared.append('patType1CorrectedPFMetUnclusteredEnUp')
+ if not useSmearedCollection:
+     
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetElectronEnDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetElectronEnUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetElectronRes')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetElectronResDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetElectronResUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetJetEnDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetJetEnUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetMuonEnDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetMuonEnUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetMuonRes')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetMuonResDown') 
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetMuonResUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetPhotonEnDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetPhotonEnUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetPhotonRes')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetPhotonResDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetPhotonResUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetTauRes')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetTauResDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetTauResUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetTausEnDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetTausEnUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetUnclusteredEnDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFMetUnclusteredEnUp')
 
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMet')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetElectronEnDown')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetElectronEnUp')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetElectronRes')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetElectronResDown')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetElectronResUp')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetJetEnDown')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetJetEnUp')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetJetResDown')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetJetResUp')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetMuonEnDown')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetMuonEnUp')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetMuonRes')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetMuonResDown')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetMuonResUp')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetPhotonEnDown')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetPhotonEnUp')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetPhotonRes')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetPhotonResDown')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetPhotonResUp')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetTauRes')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetTauResDown')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetTauResUp')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetTausEnDown')
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetTausEnUp')                                
- patTypeIMetCorrectedSmeared.append('patType1CorrectedPFSmearedMetUnclusteredEnDown')                                
- patTypeIMetCorrectedSmeared.append(B'patType1CorrectedPFSmearedMetUnclusteredEnUp')
+ else :
+
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMet')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetElectronEnDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetElectronEnUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetElectronRes')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetElectronResDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetElectronResUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetJetEnDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetJetEnUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetJetResDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetJetResUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetMuonEnDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetMuonEnUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetMuonRes')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetMuonResDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetMuonResUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetPhotonEnDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetPhotonEnUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetPhotonRes')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetPhotonResDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetPhotonResUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetTauRes')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetTauResDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetTauResUp')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetTausEnDown')
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetTausEnUp')                                
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetUnclusteredEnDown')                                
+  patTypeIMetCorrectedForMetUncertainty.append('patType1CorrectedPFSmearedMetUnclusteredEnUp')
 
  ## basic declaration of the sys shift producer
  process.pfMEtSysShiftCorr = cms.EDProducer("SysShiftMETcorrInputProducer",
@@ -134,7 +137,7 @@ def metShiftSystematicCorrection(process,
   setattr(process, nameCorrMet, process.pfMetShiftCorrected.clone(src = cms.InputTag(patTypeIMetCorrected[0]),
                                                                   srcType1Corrections = cms.VInputTag(cms.InputTag(nameShifter))))
 
-  process.metShiftSystematicCorrectionSequence += getattr(process,nameShifter)* getattr(process,nameCorrMet)
+  process.metShiftSystematicCorrectionSequence += getattr(process,nameShifter)*getattr(process,nameCorrMet)
   
  else :
 
@@ -150,10 +153,10 @@ def metShiftSystematicCorrection(process,
 
     if not useSmearedCollection:
 
-        for module in patTypeIMetCorrectedNoSmeared :
+        for module in patTypeIMetCorrectedForMetUncertainty :
 
-            if not didPhotonSmearing and "Photon" in module : continue
-            if not didTauSmearing and "Tau" in module : continue
+            if not didPhotonSystematic and "Photon" in module : continue
+            if not didTauSystematic    and "Tau"    in module : continue
             
             nameShifter = module+'MEtSysShiftCorr'
             nameCorrMet = module+'SysShifted'
@@ -166,10 +169,10 @@ def metShiftSystematicCorrection(process,
 
     else : ## apply to both smeared and not smeared collection
 
-        for module in patTypeIMetCorrectedNoSmeared :
+        for module in patTypeIMetCorrectedForMetUncertainty :
 
-            if not didPhotonSmearing and "Photon" in module : continue
-            if not didTauSmearing and "Tau" in module : continue
+            if not didPhotonSystematic and "Photon" in module : continue
+            if not didTauSystematic    and "Tau"    in module : continue
 
             nameShifter = module+'MEtSysShiftCorr'
             nameCorrMet = module+'SysShifted'
@@ -181,10 +184,10 @@ def metShiftSystematicCorrection(process,
             process.metShiftSystematicCorrectionSequence += getattr(process,nameShifter)* getattr(process,nameCorrMet)
 
 
-        for module in patTypeIMetCorrectedSmeared :
+        for module in patTypeIMetCorrectedForMetUncertainty :
 
-            if not didPhotonSmearing and "Photon" in module : continue
-            if not didTauSmearing and "Tau" in module : continue
+            if not didPhotonSystematic and "Photon" in module : continue
+            if not didTauSystematic    and "Tau"    in module : continue
 
             nameShifter = module+'MEtSysShiftCorr'
             nameCorrMet = module+'SysShifted'
