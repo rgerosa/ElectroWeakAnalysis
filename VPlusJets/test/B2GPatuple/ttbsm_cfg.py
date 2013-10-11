@@ -1903,7 +1903,7 @@ process.puJetMvaChs.algos[0].tmvaWeights = cms.string("CMGTools/External/data/TM
 process.puJetIdSequenceChs = cms.Sequence(process.puJetIdChs*
                                           process.puJetMvaChs)
 
-if not options.useData and options.doMetUncertainty and storeSmearandShiftCollections :
+if not options.useData and options.doMetUncertainty :
 
  if not options.doPatJetSmearing :
 
@@ -1920,6 +1920,12 @@ if not options.useData and options.doMetUncertainty and storeSmearandShiftCollec
   process.puJetIdSequenceChs += process.puJetIdChsEnUp*process.puJetMvaChsEnUp
   process.puJetIdSequenceChs += process.puJetIdChsEnDown*process.puJetMvaChsEnDown
 
+  if not storeSmearandShiftCollections :
+      process.puJetIdSequenceChs.remove(process.puJetIdChsEnUp)
+      process.puJetIdSequenceChs.remove(process.puJetMvaChsEnUp)
+      process.puJetIdSequenceChs.remove(process.puJetIdChsEnDown)
+      process.puJetIdSequenceChs.remove(process.puJetMvaChsEnDown)
+      
      
  else :
      
@@ -1955,7 +1961,17 @@ if not options.useData and options.doMetUncertainty and storeSmearandShiftCollec
   process.puJetIdSequenceChs += process.puSmearedJetIdChsResDown*process.puSmearedJetMvaChsResDown
   process.puJetIdSequenceChs += process.pushiftedSmearedJetIdChsEnUp*process.pushiftedSmearedJetMvaChsEnUp
   process.puJetIdSequenceChs += process.pushiftedSmearedJetIdChsEnDown*process.pushiftedSmearedJetMvaChsEnDown
-  
+
+  if not storeSmearandShiftCollections :
+
+      process.puJetIdSequenceChs.remove(process.puSmearedJetIdChsResUp)
+      process.puJetIdSequenceChs.remove(process.puSmearedJetMvaChsResUp)
+      process.puJetIdSequenceChs.remove(process.puSmearedJetIdChsResDown)
+      process.puJetIdSequenceChs.remove(process.puSmearedJetMvaChsResDown)
+      process.puJetIdSequenceChs.remove(rocess.pushiftedSmearedJetIdChsEnUp)
+      process.puJetIdSequenceChs.remove(process.pushiftedSmearedJetMvaChsEnUp)
+      process.puJetIdSequenceChs.remove(rocess.pushiftedSmearedJetIdChsEnDown)
+      process.puJetIdSequenceChs.remove(process.pushiftedSmearedJetMvaChsEnDown)
 
 
 process.patseq += process.puJetIdSequenceChs
