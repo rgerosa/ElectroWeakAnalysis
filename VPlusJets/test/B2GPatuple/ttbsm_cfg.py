@@ -1681,7 +1681,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(100)
 
 
 # process all the events
-process.maxEvents.input = 10
+process.maxEvents.input = 100
 process.options.wantSummary = False
 process.out.dropMetaData = cms.untracked.string("DROPPED")
 
@@ -1865,15 +1865,14 @@ photonCollection        = cms.InputTag("cleanPatPhotons")
 patUnclusteredCandidate = cms.InputTag("pfCandMETcorr"+postfix)
 TypeIpatMetCollection   = cms.InputTag("patMETs"+postfix)
 useData                 = options.useData
-doSmearing              = options.doPatJetSmearing
 doTauSystematic         = False
 doPhotonSystematic      = True
-saveOnlySmearedMetInfo  = True
+storeSmearandShiftCollections = False
 
 if options.doMetUncertainty :
  runMetUncertainty(process,
                    useData,
-                   doSmearing,
+                   options.doPatJetSmearing,
                    patJetCollection,
                    patMuonCollection,
                    patElectronCollection,
@@ -1883,7 +1882,7 @@ if options.doMetUncertainty :
                    TypeIpatMetCollection,
                    doTauSystematic,
                    doPhotonSystematic,
-                   saveOnlySmearedMetInfo
+                   storeSmearandShiftCollections
                   )
 
 
@@ -1904,40 +1903,35 @@ process.puJetMvaChs.algos[0].tmvaWeights = cms.string("CMGTools/External/data/TM
 process.puJetIdSequenceChs = cms.Sequence(process.puJetIdChs*
                                           process.puJetMvaChs)
 
-if not options.useData and options.doMetUncertainty :
+if not options.useData and options.doMetUncertainty and storeSmearandShiftCollections :
 
+ if not options.doPatJetSmearing :
 
- process.puJetIdChsEnUp  = process.puJetIdChs.clone(jets = cms.InputTag("shiftedPatJetsPFlowEnUp"))
+  process.puJetIdChsEnUp  = process.puJetIdChs.clone(jets = cms.InputTag("shiftedPatJetsPFlowEnUp"))
 
- process.puJetMvaChsEnUp = process.puJetMvaChs.clone(jets = cms.InputTag("shiftedPatJetsPFlowEnUp"),
-                                                     jetids = cms.InputTag("puJetIdChsEnUp"))
+  process.puJetMvaChsEnUp = process.puJetMvaChs.clone(jets = cms.InputTag("shiftedPatJetsPFlowEnUp"),
+                                                      jetids = cms.InputTag("puJetIdChsEnUp"))
 
- process.puJetIdChsEnDown  = process.puJetIdChs.clone(jets = cms.InputTag("shiftedPatJetsPFlowEnDown"))
+  process.puJetIdChsEnDown  = process.puJetIdChs.clone(jets = cms.InputTag("shiftedPatJetsPFlowEnDown"))
 
- process.puJetMvaChsEnDown = process.puJetMvaChs.clone(jets = cms.InputTag("shiftedPatJetsPFlowEnDown"),
-                                                       jetids = cms.InputTag("puJetIdChsEnDown"))
+  process.puJetMvaChsEnDown = process.puJetMvaChs.clone(jets = cms.InputTag("shiftedPatJetsPFlowEnDown"),
+                                                        jetids = cms.InputTag("puJetIdChsEnDown"))
 
- process.puJetIdSequenceChs += process.puJetIdChsEnUp*process.puJetMvaChsEnUp
- process.puJetIdSequenceChs += process.puJetIdChsEnDown*process.puJetMvaChsEnDown
+  process.puJetIdSequenceChs += process.puJetIdChsEnUp*process.puJetMvaChsEnUp
+  process.puJetIdSequenceChs += process.puJetIdChsEnDown*process.puJetMvaChsEnDown
 
- if saveOnlySmearedMetInfo :
-   process.puJetIdSequenceChs.remove(process.puJetIdChsEnUp)
-   process.puJetIdSequenceChs.remove(process.puJetMvaChsEnUp)
-   process.puJetIdSequenceChs.remove(process.puJetIdChsEnDown)
-   process.puJetIdSequenceChs.remove(process.puJetMvaChsEnDown)
-   
      
- if options.doPatJetSmearing :
+ else :
      
-  process.puSmearedJetIdChs       = process.puJetIdChs.clone(jets = cms.InputTag("smearedPatJetsPFlow"))
+  process.puSmearedJetIdChs  = process.puJetIdChs.clone(jets = cms.InputTag("smearedPatJetsPFlow"))
  
-  process.puSmearedJetMvaChs      = process.puJetMvaChs.clone(jets = cms.InputTag("smearedPatJetsPFlow"),
-                                                              jetids = cms.InputTag("puSmearedJetIdChs"))
+  process.puSmearedJetMvaChs = process.puJetMvaChs.clone(jets = cms.InputTag("smearedPatJetsPFlow"),
+                                                         jetids = cms.InputTag("puSmearedJetIdChs"))
 
-  process.puSmearedJetIdChsResUp  = process.puJetIdChs.clone(jets = cms.InputTag("smearedPatJetsPFlowResUp"))
+  process.puSmearedJetIdChsResUp    = process.puJetIdChs.clone(jets = cms.InputTag("smearedPatJetsPFlowResUp"))
  
-  process.puSmearedJetMvaChsResUp = process.puJetMvaChs.clone(jets = cms.InputTag("smearedPatJetsPFlowResUp"),
-                                                              jetids = cms.InputTag("puSmearedJetIdChsResUp"))
+  process.puSmearedJetMvaChsResUp   = process.puJetMvaChs.clone(jets = cms.InputTag("smearedPatJetsPFlowResUp"),
+                                                                jetids = cms.InputTag("puSmearedJetIdChsResUp"))
 
   process.puSmearedJetIdChsResDown  = process.puJetIdChs.clone(jets = cms.InputTag("smearedPatJetsPFlowResDown"))
  
@@ -1967,7 +1961,8 @@ if not options.useData and options.doMetUncertainty :
 process.patseq += process.puJetIdSequenceChs
 
 process.out.outputCommands += ['keep *_pu*JetId*_*_*',
-                                'keep *_pu*JetMva*_*_*']
+                               'keep *_pu*JetMva*_*_*'
+                               ]
 
 
 ############################
