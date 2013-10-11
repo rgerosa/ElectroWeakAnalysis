@@ -41,10 +41,10 @@ options.register ('useSmearedCollection', True, VarParsing.multiplicity.singleto
 options.register ('hltPath', 'HLT_IsoMu24_*, HLT_Mu40_eta2p1*', VarParsing.multiplicity.singleton, VarParsing.varType.string,
                   "List of HLT path to be required when running on data. Should be separetad by ")
 
-options.register ('didPhotonSmearing', True, VarParsing.multiplicity.singleton, VarParsing.varType.int,
+options.register ('didPhotonSystematic', True, VarParsing.multiplicity.singleton, VarParsing.varType.int,
                   "true if in PAT the photon smearing for resolution has been done")
 
-options.register ('didTauSmearing', True, VarParsing.multiplicity.singleton, VarParsing.varType.int,
+options.register ('didTauSystematic', False, VarParsing.multiplicity.singleton, VarParsing.varType.int,
                   "true if in PAT the tau smearing for resolution has been done")
 
 options.register ('isPileUpJetID', True, VarParsing.multiplicity.singleton, VarParsing.varType.int,
@@ -52,6 +52,9 @@ options.register ('isPileUpJetID', True, VarParsing.multiplicity.singleton, VarP
 
 options.register ('isRequireTwoJets', False, VarParsing.multiplicity.singleton, VarParsing.varType.int,
                   "true if you want to do the two jet analysis --> resolved jet, non boosted category")
+
+options.register ('storeSmearandShiftCollections', False, VarParsing.multiplicity.singleton, VarParsing.varType.int,
+                  "true if you want to store and skim also shifted/smeared jet collections")
 
 options.register ('skipAnalyzerAndDumpOutput', False, VarParsing.multiplicity.singleton, VarParsing.varType.int,
                   "true if you don't want to run the analyzer but dump a output file with all the collections keep*")
@@ -180,19 +183,17 @@ from ElectroWeakAnalysis.VPlusJets.patMETSysShiftCorrection_cfi import *
 runCorrection                  = cms.string("Run2012ABCD")
 vertexCollection               = cms.InputTag("goodOfflinePrimaryVertices")
 patTypeIMetCorrected           = []
-patTypeIMetCorrectedNoSmeared  = []
-patTypeIMetcorrectedSmeared    = []
+patTypeIMetCorrectedForMetUncertainty  = []
 
 metShiftSystematicCorrection(process,
                              options.isMC,
                              options.useSmearedCollection,
                              runCorrection,
                              vertexCollection,
-                             options.didPhotonSmearing,
-                             options.didTauSmearing,
+                             options.didPhotonSystematic,
+                             options.didTauSystematic,
                              patTypeIMetCorrected,
-                             patTypeIMetCorrectedNoSmeared,
-                             patTypeIMetcorrectedSmeared)
+                             patTypeIMetCorrectedForMetUncertainty)
 
 
 ####################################################
@@ -256,15 +257,15 @@ jetPtThreshold          = 30.
 useMVAPileUpJetID       = True
 
 AK5JetCollectionsPATSelection(process,
+                              options.isMC,
                               patJetCollection,
                               patSmearedJetCollection,
                               options.isPileUpJetID,
                               useMVAPileUpJetID,
                               options.useSmearedCollection,
+                              options.storeSmearandShiftCollections,
                               jetPtThreshold,
-                              options.isRequireTwoJets,
-                              options.isMC)
-    
+                              options.isRequireTwoJets)
 
 #############################################################################################################################
 ### Filter to require or at least two jets or one with hight pT --> preselection common to boosted and unboosted category ###    
@@ -332,8 +333,6 @@ process.RequireTwoJetsORboostedVStep = process.AllPassFilter.clone()
 #    process.VplusJets.JEC_GlobalTag_forGroomedJet = cms.string("START53_V15")
 #else:
 #    process.VplusJets.JEC_GlobalTag_forGroomedJet = cms.string("FT_53_V10_AN3")
-
-
 
 
 process.myseq = cms.Sequence( process.AllEventsStep*
