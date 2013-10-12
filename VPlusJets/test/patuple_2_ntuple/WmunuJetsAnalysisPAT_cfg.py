@@ -212,9 +212,9 @@ if options.isHEEPID:
     pTCutLooseElectronVeto = 20.
 
 else :
-    pTCutValue = 20.
-    pTCutLooseMuonVeto = 20.
-    pTCutLooseElectronVeto = 20.
+    pTCutValue = 25.
+    pTCutLooseMuonVeto = 10.
+    pTCutLooseElectronVeto = 10.
     
 TransverseMassCutValue = 30.
 
