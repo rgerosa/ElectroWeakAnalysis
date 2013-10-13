@@ -59,7 +59,7 @@ PuJetIdSelector<T>::PuJetIdSelector(const edm::ParameterSet& iConfig){
 
   if(iConfig.existsAs<edm::InputTag>("src"))
     src_ = iConfig.getParameter<edm::InputTag>("src");
-  else { std::cerr<<" No input jet collection give --> exit from the producer "<<std::endl; return;}
+  else src_ = edm::InputTag("selectedPatJetsPFlow");
 
   if (iConfig.existsAs<std::string>("@module_label"))
     moduleLabel_ = iConfig.getParameter<std::string>   ("@module_label") ;
