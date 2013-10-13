@@ -55,7 +55,7 @@ HEEPElectronProducer::HEEPElectronProducer(const edm::ParameterSet &  iConfig){
 
   if( iConfig.existsAs<edm::InputTag>("electronCollection") )
     eleLabel_=iConfig.getParameter< edm::InputTag >("electronCollection");
-  else eleLabel_= edm::InputTag("heepPatElectrons");
+  else eleLabel_= edm::InputTag("heepPatElectronsPFlow");
 
   if( iConfig.existsAs<std::string>("eleIdType") )
     IdLabel_=iConfig.getParameter<std::string>("eleIdType");
