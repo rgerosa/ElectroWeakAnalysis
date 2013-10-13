@@ -62,7 +62,7 @@ ElectronIdSelector<T>::ElectronIdSelector(const edm::ParameterSet& iConfig){
     src_ = iConfig.getParameter<edm::InputTag>("src") ;
   else  src_ = edm::InputTag("selectedPatElectronsPFlow");
 
-  if(iConfig.existsAs<edm::InputTag>("@module_label"))
+  if(iConfig.existsAs<std::string>("@module_label"))
     moduleLabel_ = iConfig.getParameter<std::string>("@module_label");
   else moduleLabel_ = "";
 
