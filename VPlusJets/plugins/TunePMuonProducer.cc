@@ -48,9 +48,9 @@ TunePMuonProducer::TunePMuonProducer(const edm::ParameterSet& iConfig) {
 
   muonMass_ = 0.1056583715; //GeV 
 
-  if( iConfig.existsAs<std::string>("muLabel") )
+  if( iConfig.existsAs<edm::InputTag>("muLabel") )
      muLabel_=iConfig.getParameter<edm::InputTag>("muLabel");
-  else muLabel_ = edm::InputTag("selectedPatMuons");
+  else muLabel_ = edm::InputTag("selectedPatMuonsPFlow");
 
   if(iConfig.existsAs<bool>("debug") )
     debug_ = iConfig.getParameter<bool>("debug");
@@ -71,7 +71,7 @@ void TunePMuonProducer::produce(edm::Event& iEvent,const edm::EventSetup& iSetup
   edm::Handle<edm::View<pat::Muon> > muHandle;
   iEvent.getByLabel(muLabel_,muHandle);
   const edm::View<pat::Muon>& muons = *(muHandle.product());
-
+ 
   //prepare output collections
   std::auto_ptr<pat::MuonCollection> outMuons(new pat::MuonCollection());
 
