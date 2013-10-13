@@ -179,8 +179,12 @@ from ElectroWeakAnalysis.VPlusJets.patMETSysShiftCorrection_cfi import *
 
 runCorrection                  = cms.string("Run2012ABCD")
 vertexCollection               = cms.InputTag("goodOfflinePrimaryVertices")
-patTypeIMetCorrected           = []
+
+patTypeIMetCorrected                   = ['patMETsPFlow']
 patTypeIMetCorrectedForMetUncertainty  = []
+
+patTypeIMetCorrectedShifted                  = []
+patTypeIMetCorrectedShiftedForMetUncertainty = []
 
 metShiftSystematicCorrection(process,
                              options.isMC,
@@ -190,7 +194,9 @@ metShiftSystematicCorrection(process,
                              options.didPhotonSystematic,
                              options.didTauSystematic,
                              patTypeIMetCorrected,
-                             patTypeIMetCorrectedForMetUncertainty)
+                             patTypeIMetCorrectedForMetUncertainty,
+                             patTypeIMetCorrectedShifted,
+                             patTypeIMetCorrectedShiftedForMetUncertainty)
 
 ########################################################
 ### Lepton Step : Electron Selection and Lepton Veto ###
@@ -214,9 +220,6 @@ else :
 
 TransverseMassCutValue = 30.
 
-patTypeICorrectedMetSysShifted = []
-patTypeICorrectedMetSysShifted.append('patMETsPFlowSysShifted')
-
 WenuCollectionsPAT(process,
                    patMuonCollection ,
                    patElectronCollection,
@@ -228,7 +231,7 @@ WenuCollectionsPAT(process,
                    pTCutLooseElectronVeto,
                    options.isTransverseMassCut,
                    TransverseMassCutValue,
-                   patTypeICorrectedMetSysShifted)
+                   patTypeIMetCorrectedShifted)
 
 ##############################################
 ### Standard AK5 jet collection selection  ###
@@ -250,6 +253,9 @@ patSmearedJetCollection.append('smearedPatJetsPFlowResUp')
 jetPtThreshold          = 30.
 useMVAPileUpJetID       = True
 
+patCentralAK5Jets = []
+patForwardAK5Jets = []
+
 AK5JetCollectionsPATSelection(process,
                               options.isMC,
                               patJetCollection,
@@ -259,7 +265,9 @@ AK5JetCollectionsPATSelection(process,
                               options.useSmearedCollection,
                               options.storeSmearandShiftCollections,
                               jetPtThreshold,
-                              options.isRequireTwoJets)
+                              options.isRequireTwoJets,
+                              patCentralAK5Jets,
+                              patForwardAK5Jets)
 
 #############################################################################################################################
 ### Filter to require or at least two jets or one with hight pT --> preselection common to boosted and unboosted category ###
@@ -276,52 +284,51 @@ process.RequireTwoJetsORboostedV = cms.EDFilter("JetsORboostedV",
 
 process.RequireTwoJetsORboostedVStep = process.AllPassFilter.clone()
 
-
 ##-------- Save V+jets trees --------
-#process.VplusJets = cms.EDAnalyzer("VplusJetsAnalysis", 
-#    jetType = cms.string("PF"),
-#    srcPFCor = cms.InputTag("ak5PFJetsLooseId"),
-#    srcPhoton = cms.InputTag("photons"),
+#process.VplusJets = cms.EDAnalyzer("VplusJetsAnalysis",
+#    TreeName       = cms.string('WJet'),
+#    LeptonType     = cms.string('electron'),
+#    runningOverMC  = cms.bool(options.isMC),
+#    runningOverAOD = cms.bool(False),
+#    useSmearedCollection          = cms.bool(options.useSmearedCollection),
+#    storeSmearandShiftCollections = cms.bool(options.storeSmearandShiftCollections),
+#    srcMuons  = cms.InputTag("selectedPatElectronsPFlow"), ## the real muon used for fillin the info is taken from Vboson as daughter
+#    jetType   = cms.string("PF"),
+#    srcPFPatCentralAK5Jets = cms.VInputTag(patCentralAK5Jets),
+#    srcPFPatForwardAK5Jets = cms.VInputTag(patForwardAK5Jets),
+#    srcGenJets     = cms.InputTag("ak5GenJets"),
+#    srcJetsforRho  = cms.string("kt6PFJetsPFlow"),
+#    srcJetsforRho_lepIso = cms.string("kt6PFJetsForIsolation"),
+#    srcFlavorByValue     = cms.InputTag("ak5tagJet"),
+#    VBosonType     = cms.string('W'),
+#    srcVectorBoson = cms.InputTag("bestWToEnu"),
+#    srcCorrectedMet = cms.InputTag(patTypeIMetCorrectedShifted),
+#    srcMetForUncertainty = cms.VInputTag(patTypeIMetCorrectedShiftedForMetUncertainty),
+#    srcGenMet    = cms.InputTag("genMetTrue"),
+#    srcPhoton    = cms.InputTag("cleanPatPhotons"),                                                                                               
 #    IsoValPhoton = cms.VInputTag(cms.InputTag('phoPFIso:chIsoForGsfEle'),
 #                                 cms.InputTag('phoPFIso:phIsoForGsfEle'),
-#                                 cms.InputTag('phoPFIso:nhIsoForGsfEle'),
-#                                                           ),
-#     srcPFCorVBFTag = cms.InputTag("ak5PFJetsLooseIdVBFTag"), 
-#     srcVectorBoson = cms.InputTag("bestWToEnu"),
-#     VBosonType     = cms.string('W'),
-#     LeptonType     = cms.string('electron'),                          
-#     TreeName    = cms.string('WJet'),
-#     srcPrimaryVertex = cms.InputTag("goodOfflinePrimaryVertices"),                               
-#     runningOverMC = cms.bool(isMC),			
-#     runningOverAOD = cms.bool(False),			
-#     srcMet = cms.InputTag("patMetShiftCorrected"),
-#     srcMetMVA = cms.InputTag("pfMEtMVA"),
-#     srcGen  = cms.InputTag("ak5GenJets"),
-#     srcElectrons  = cms.InputTag("heepPatElectrons"),
-#     srcBeamSpot  = cms.InputTag("offlineBeamSpot"),
-#     srcRawMet  = cms.InputTag("patMETsPFlow"),
-#     srcgenMet  = cms.InputTag("genMetTrue"),
-#     srcGenParticles  = cms.InputTag("genParticles"),
-#     srcTcMet    = cms.InputTag("patMETsAK5TC"),
-#     srcJetsforRho = cms.string("kt6PFJetsPFlow"),                               
-#     srcJetsforRho_lepIso = cms.string("kt6PFJetsForIsolation"),       
-#     srcJetsforRhoCHS = cms.string("kt6PFJetsChsPFlow"),
-#     srcJetsforRho_lepIsoCHS = cms.string("kt6PFJetsChsForIsolationPFlow"),
-
-#     applyJECToGroomedJets=cms.bool(True),
-#     doGroomedAK5 = cms.bool(True),
-#     doGroomedAK7 = cms.bool(True),
-#     doGroomedAK8 = cms.bool(False),
-#     doGroomedCA8 = cms.bool(True),
-#     doGroomedCA12 = cms.bool(False)
-#)
-
+#                                 cms.InputTag('phoPFIso:nhIsoForGsfEle')),
+#    srcPrimaryVertex = cms.InputTag("goodOfflinePrimaryVertices"),
+#    srcBeamSpot      = cms.InputTag("offlineBeamSpot"),
+#    srcGenParticles  = cms.InputTag("genParticles"),
+#    bTagger          = cms.string("combinedSecondaryVertexBJetTags"),
+#    pfCandidateForGrooming = cms.InputTag("pfNoElectronPFlow"),
+#    pfCandiatePileUp       = cms.InputTag("pfPileUpPFlow"),
+#    doGroomedAK5     = cms.bool(True),
+#    doGroomedAK6     = cms.bool(True),
+#    doGroomedAK7     = cms.bool(True),
+#    doGroomedAK8     = cms.bool(True),
+#    doGroomedAK10    = cms.bool(True),
+#    doGroomedAK12    = cms.bool(True),
+#    doGroomedCA8     = cms.bool(True),
+#    doGroomedCA12    = cms.bool(True),
+#    applyJECToGroomedJets =cms.bool(True))
 
 #if isMC:
-#     process.VplusJets.JEC_GlobalTag_forGroomedJet = cms.string("START53_V15")
+#    process.VplusJets.JEC_GlobalTag_forGroomedJet = cms.string("START53_V15")
 #else:
-#     process.VplusJets.JEC_GlobalTag_forGroomedJet = cms.string("GR_P_V39_AN3")
-
+#    process.VplusJets.JEC_GlobalTag_forGroomedJet = cms.string("FT_53_V10_AN3")                                                                  
 
 ####################################################
 ### Define the final Sequence and Path to be run ###
