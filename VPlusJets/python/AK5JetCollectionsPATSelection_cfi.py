@@ -20,7 +20,9 @@ def AK5JetCollectionsPATSelection(process,
                                   useSmearedCollection,
                                   storeSmearandShiftCollections,
                                   jetPtThreshold,
-                                  isRequireTwoJets):
+                                  isRequireTwoJets,
+                                  patCentralAK5Jets,
+                                  patForwardAK5Jets):
 
 
  print "                                  "
@@ -89,6 +91,9 @@ def AK5JetCollectionsPATSelection(process,
                                                    cut = cms.string('pt > %f && abs(eta) > 2.4'%jetPtThreshold))
 
 
+ patCentralAK5Jets.append("ak5PFJetsPtSkimmedCentral")
+ patForwardAK5Jets.append("ak5PFJetsPtSkimmedForward")
+ 
 
  ### Filter to require at least two jets in the event , to be applied for two jets topology --> after pT skim
 
@@ -101,12 +106,12 @@ def AK5JetCollectionsPATSelection(process,
  
  ### Define the most general sequence
  
- process.ak5PFJetPath = cms.Sequence( process.ak5PFnoPUJets*
-                                      process.ak5PFGoodJets*
-                                      process.ak5PFJetsClean*
-                                      process.ak5PFJetsPtSkimmed*
-                                      process.ak5PFJetsPtSkimmedCentral*
-                                      process.ak5PFJetsPtSkimmedForward)
+ process.ak5PFJetPath = cms.Sequence(process.ak5PFnoPUJets*
+                                     process.ak5PFGoodJets*
+                                     process.ak5PFJetsClean*
+                                     process.ak5PFJetsPtSkimmed*
+                                     process.ak5PFJetsPtSkimmedCentral*
+                                     process.ak5PFJetsPtSkimmedForward)
 
  if isRequireTwoJets :
    process.ak5PFJetPath += process.RequireTwoJets*process.RequireTwoJetsStep
@@ -119,19 +124,21 @@ def AK5JetCollectionsPATSelection(process,
  
  if isMC :
 
-  for module in patJetCollection :
+  if not useSmearedCollection :
 
-   noPUJetName              = 'ak5PFnoPUJets'
-   mvaChsValueMap           = 'puJetMvaChs'
-   goodJetName              = 'ak5PFGoodJets'
-   cleanJetName             = 'ak5PFJetsClean'
-   JetsPtSkimmedName        = 'ak5PFJetsPtSkimmed' 
-   JetsPtSkimmedNameCentral = 'ak5PFJetsPtSkimmedCentral'
-   JetsPtSkimmedNameForward = 'ak5PFJetsPtSkimmedForward'
+   for module in patJetCollection :
 
-   if module == patJetCollection[0] : continue
+    noPUJetName              = 'ak5PFnoPUJets'
+    mvaChsValueMap           = 'puJetMvaChs'
+    goodJetName              = 'ak5PFGoodJets'
+    cleanJetName             = 'ak5PFJetsClean'
+    JetsPtSkimmedName        = 'ak5PFJetsPtSkimmed' 
+    JetsPtSkimmedNameCentral = 'ak5PFJetsPtSkimmedCentral'
+    JetsPtSkimmedNameForward = 'ak5PFJetsPtSkimmedForward'
 
-   if "EnUp" in module and "shifted" in module:
+    if module == patJetCollection[0] : continue
+
+    if "EnUp" in module and "shifted" in module:
 
        noPUJetName              = noPUJetName+'EnUp'
        mvaChsValueMap           = mvaChsValueMap+'EnUp'
@@ -141,7 +148,7 @@ def AK5JetCollectionsPATSelection(process,
        JetsPtSkimmedNameCentral = JetsPtSkimmedNameCentral+'EnUp'
        JetsPtSkimmedNameForward = JetsPtSkimmedNameForward+'EnUp'
        
-   elif "EnDown" in module and "shifted" in module :
+    elif "EnDown" in module and "shifted" in module :
 
        noPUJetName              = noPUJetName+'EnDown'
        mvaChsValueMap           = mvaChsValueMap+'EnDown'
@@ -150,94 +157,6 @@ def AK5JetCollectionsPATSelection(process,
        JetsPtSkimmedName        = JetsPtSkimmedName+'EnDown'
        JetsPtSkimmedNameCentral = JetsPtSkimmedNameCentral+'EnDown'
        JetsPtSkimmedNameForward = JetsPtSkimmedNameForward+'EnDown'
-
-   setattr(process, noPUJetName, process.ak5PFnoPUJets.clone(src = cms.InputTag(module),
-                                                             valueMapLabel = cms.string(mvaChsValueMap)))
-   setattr(process, goodJetName, process.ak5PFGoodJets.clone(src = cms.InputTag(noPUJetName)))
-
-   if not isPileUpJetID :
-    setattr(process, goodJetName, process.ak5PFGoodJets.clone(src = cms.InputTag(module)))
-           
-   setattr(process, cleanJetName, process.ak5PFJetsClean.clone(src = cms.InputTag(goodJetName)))
-   setattr(process, JetsPtSkimmedName, process.ak5PFJetsPtSkimmed.clone(src = cms.InputTag(cleanJetName)))
-   setattr(process, JetsPtSkimmedNameCentral, process.ak5PFJetsPtSkimmedCentral.clone(src = cms.InputTag(cleanJetName)))
-   setattr(process, JetsPtSkimmedNameForward, process.ak5PFJetsPtSkimmedForward.clone(src = cms.InputTag(cleanJetName)))
-
-   process.ak5PFJetPath += getattr(process,noPUJetName)
-   process.ak5PFJetPath += getattr(process,goodJetName)
-   process.ak5PFJetPath += getattr(process,cleanJetName)
-   process.ak5PFJetPath += getattr(process,JetsPtSkimmedName)
-   process.ak5PFJetPath += getattr(process,JetsPtSkimmedNameCentral)
-   process.ak5PFJetPath += getattr(process,JetsPtSkimmedNameForward)           
-
-   if not storeSmearandShiftCollections:
-
-       process.ak5PFJetPath.remove(getattr(process,noPUJetName))
-       process.ak5PFJetPath.remove(getattr(process,cleanJetName))
-       process.ak5PFJetPath.remove(getattr(process,goodJetName))
-       process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedName))
-       process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedNameCentral))
-       process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedNameForward))
-
-   if not isPileUpJetID :
-       process.ak5PFJetPath.remove(getattr(process,noPUJetName))
-
- 
-  if useSmearedCollection :
-      
-   for module in patSmearedJetCollection :
-
-    noPUJetName              = 'smearedak5PFnoPUJets'
-    mvaChsValueMap           = 'SmearedJetMvaChs'
-
-    if module == patSmearedJetCollection[0] :
-        mvaChsValueMap       = 'puSmearedJetMvaChs'
-
-    goodJetName              = 'smearedak5PFGoodJets'
-    cleanJetName             = 'smearedak5PFJetsClean'
-    JetsPtSkimmedName        = 'smearedak5PFJetsPtSkimmed' 
-    JetsPtSkimmedNameCentral = 'smearedak5PFJetsPtSkimmedCentral'
-    JetsPtSkimmedNameForward = 'smearedak5PFJetsPtSkimmedForward'
-
-    if "EnUp" in module and ( "smeared" in module or "Smeared" in module):
-
-       noPUJetName              = noPUJetName+'EnUp'
-       mvaChsValueMap           = 'pushifted'+mvaChsValueMap+'EnUp'
-       goodJetName              = goodJetName+'EnUp'
-       cleanJetName             = cleanJetName+'EnUp'
-       JetsPtSkimmedName        = JetsPtSkimmedName+'EnUp'
-       JetsPtSkimmedNameCentral = JetsPtSkimmedNameCentral+'EnUp'
-       JetsPtSkimmedNameForward = JetsPtSkimmedNameForward+'EnUp'
-       
-    elif "EnDown" in module and  ( "smeared" in module or "Smeared" in module):
-
-       noPUJetName              = noPUJetName+'EnDown'
-       mvaChsValueMap           = 'pushifted'+mvaChsValueMap+'EnDown'
-       goodJetName              = goodJetName+'EnDown'
-       cleanJetName             = cleanJetName+'EnDown'
-       JetsPtSkimmedName        = JetsPtSkimmedName+'EnDown'
-       JetsPtSkimmedNameCentral = JetsPtSkimmedNameCentral+'EnDown'
-       JetsPtSkimmedNameForward = JetsPtSkimmedNameForward+'EnDown'
-
-    elif "ResDown" in module and ( "smeared" in module or "Smeared" in module):
-
-       noPUJetName              = noPUJetName+'ResDown'
-       goodJetName              = goodJetName+'ResDown'
-       mvaChsValueMap           = 'pu'+mvaChsValueMap+'ResDown'
-       cleanJetName             = cleanJetName+'ResDown'
-       JetsPtSkimmedName        = JetsPtSkimmedName+'ResDown'
-       JetsPtSkimmedNameCentral = JetsPtSkimmedNameCentral+'ResDown'
-       JetsPtSkimmedNameForward = JetsPtSkimmedNameForward+'ResDown'
-
-    elif "ResUp" in module and ( "smeared" in module or "Smeared" in module):
-
-       noPUJetName              = noPUJetName+'ResUp'
-       mvaChsValueMap           = 'pu'+mvaChsValueMap+'ResUp'
-       goodJetName              = goodJetName+'ResUp'
-       cleanJetName             = cleanJetName+'ResUp'
-       JetsPtSkimmedName        = JetsPtSkimmedName+'ResUp'
-       JetsPtSkimmedNameCentral = JetsPtSkimmedNameCentral+'ResUp'
-       JetsPtSkimmedNameForward = JetsPtSkimmedNameForward+'ResUp'
 
     setattr(process, noPUJetName, process.ak5PFnoPUJets.clone(src = cms.InputTag(module),
                                                              valueMapLabel = cms.string(mvaChsValueMap)))
@@ -251,6 +170,9 @@ def AK5JetCollectionsPATSelection(process,
     setattr(process, JetsPtSkimmedNameCentral, process.ak5PFJetsPtSkimmedCentral.clone(src = cms.InputTag(cleanJetName)))
     setattr(process, JetsPtSkimmedNameForward, process.ak5PFJetsPtSkimmedForward.clone(src = cms.InputTag(cleanJetName)))
 
+    patCentralAK5Jets.append(JetsPtSkimmedNameCentral)
+    patForwardAK5Jets.append(JetsPtSkimmedNameForward)
+
     process.ak5PFJetPath += getattr(process,noPUJetName)
     process.ak5PFJetPath += getattr(process,goodJetName)
     process.ak5PFJetPath += getattr(process,cleanJetName)
@@ -258,17 +180,114 @@ def AK5JetCollectionsPATSelection(process,
     process.ak5PFJetPath += getattr(process,JetsPtSkimmedNameCentral)
     process.ak5PFJetPath += getattr(process,JetsPtSkimmedNameForward)           
 
-    if not storeSmearandShiftCollections and module != patSmearedJetCollection[0] :
+    if not storeSmearandShiftCollections:
 
-     process.ak5PFJetPath.remove(getattr(process,noPUJetName))
-     process.ak5PFJetPath.remove(getattr(process,goodJetName))
-     process.ak5PFJetPath.remove(getattr(process,cleanJetName))
-     process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedName))
-     process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedNameCentral))
-     process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedNameForward))           
-        
-        
+       process.ak5PFJetPath.remove(getattr(process,noPUJetName))
+       process.ak5PFJetPath.remove(getattr(process,cleanJetName))
+       process.ak5PFJetPath.remove(getattr(process,goodJetName))
+       process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedName))
+       process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedNameCentral))
+       process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedNameForward))
+
+       del patCentralAK5Jets[-1]
+       del patForwardAK5Jets[-1]
+
     if not isPileUpJetID :
+       process.ak5PFJetPath.remove(getattr(process,noPUJetName))
+
+ 
+  else:
+      
+    for module in patSmearedJetCollection :
+
+     noPUJetName              = 'smearedak5PFnoPUJets'
+     mvaChsValueMap           = 'SmearedJetMvaChs'
+
+     if module == patSmearedJetCollection[0] :
+      mvaChsValueMap       = 'puSmearedJetMvaChs'
+
+     goodJetName              = 'smearedak5PFGoodJets'
+     cleanJetName             = 'smearedak5PFJetsClean'
+     JetsPtSkimmedName        = 'smearedak5PFJetsPtSkimmed' 
+     JetsPtSkimmedNameCentral = 'smearedak5PFJetsPtSkimmedCentral'
+     JetsPtSkimmedNameForward = 'smearedak5PFJetsPtSkimmedForward'
+
+     if "EnUp" in module and ( "smeared" in module or "Smeared" in module):
+
+       noPUJetName              = noPUJetName+'EnUp'
+       mvaChsValueMap           = 'pushifted'+mvaChsValueMap+'EnUp'
+       goodJetName              = goodJetName+'EnUp'
+       cleanJetName             = cleanJetName+'EnUp'
+       JetsPtSkimmedName        = JetsPtSkimmedName+'EnUp'
+       JetsPtSkimmedNameCentral = JetsPtSkimmedNameCentral+'EnUp'
+       JetsPtSkimmedNameForward = JetsPtSkimmedNameForward+'EnUp'
+       
+     elif "EnDown" in module and  ( "smeared" in module or "Smeared" in module):
+
+       noPUJetName              = noPUJetName+'EnDown'
+       mvaChsValueMap           = 'pushifted'+mvaChsValueMap+'EnDown'
+       goodJetName              = goodJetName+'EnDown'
+       cleanJetName             = cleanJetName+'EnDown'
+       JetsPtSkimmedName        = JetsPtSkimmedName+'EnDown'
+       JetsPtSkimmedNameCentral = JetsPtSkimmedNameCentral+'EnDown'
+       JetsPtSkimmedNameForward = JetsPtSkimmedNameForward+'EnDown'
+
+     elif "ResDown" in module and ( "smeared" in module or "Smeared" in module):
+
+       noPUJetName              = noPUJetName+'ResDown'
+       goodJetName              = goodJetName+'ResDown'
+       mvaChsValueMap           = 'pu'+mvaChsValueMap+'ResDown'
+       cleanJetName             = cleanJetName+'ResDown'
+       JetsPtSkimmedName        = JetsPtSkimmedName+'ResDown'
+       JetsPtSkimmedNameCentral = JetsPtSkimmedNameCentral+'ResDown'
+       JetsPtSkimmedNameForward = JetsPtSkimmedNameForward+'ResDown'
+
+     elif "ResUp" in module and ( "smeared" in module or "Smeared" in module):
+
+       noPUJetName              = noPUJetName+'ResUp'
+       mvaChsValueMap           = 'pu'+mvaChsValueMap+'ResUp'
+       goodJetName              = goodJetName+'ResUp'
+       cleanJetName             = cleanJetName+'ResUp'
+       JetsPtSkimmedName        = JetsPtSkimmedName+'ResUp'
+       JetsPtSkimmedNameCentral = JetsPtSkimmedNameCentral+'ResUp'
+       JetsPtSkimmedNameForward = JetsPtSkimmedNameForward+'ResUp'
+
+     setattr(process, noPUJetName, process.ak5PFnoPUJets.clone(src = cms.InputTag(module),
+                                                               valueMapLabel = cms.string(mvaChsValueMap)))
+     setattr(process, goodJetName, process.ak5PFGoodJets.clone(src = cms.InputTag(noPUJetName)))
+
+     if not isPileUpJetID :
+      setattr(process, goodJetName, process.ak5PFGoodJets.clone(src = cms.InputTag(module)))
+           
+     setattr(process, cleanJetName, process.ak5PFJetsClean.clone(src = cms.InputTag(goodJetName)))
+     setattr(process, JetsPtSkimmedName, process.ak5PFJetsPtSkimmed.clone(src = cms.InputTag(cleanJetName)))
+     setattr(process, JetsPtSkimmedNameCentral, process.ak5PFJetsPtSkimmedCentral.clone(src = cms.InputTag(cleanJetName)))
+     setattr(process, JetsPtSkimmedNameForward, process.ak5PFJetsPtSkimmedForward.clone(src = cms.InputTag(cleanJetName)))
+
+     process.ak5PFJetPath += getattr(process,noPUJetName)
+     process.ak5PFJetPath += getattr(process,goodJetName)
+     process.ak5PFJetPath += getattr(process,cleanJetName)
+     process.ak5PFJetPath += getattr(process,JetsPtSkimmedName)
+     process.ak5PFJetPath += getattr(process,JetsPtSkimmedNameCentral)
+     process.ak5PFJetPath += getattr(process,JetsPtSkimmedNameForward)           
+
+     patCentralAK5Jets.append(JetsPtSkimmedNameCentral)
+     patForwardAK5Jets.append(JetsPtSkimmedNameForward)
+
+
+     if not storeSmearandShiftCollections and module != patSmearedJetCollection[0] :
+
+      process.ak5PFJetPath.remove(getattr(process,noPUJetName))
+      process.ak5PFJetPath.remove(getattr(process,goodJetName))
+      process.ak5PFJetPath.remove(getattr(process,cleanJetName))
+      process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedName))
+      process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedNameCentral))
+      process.ak5PFJetPath.remove(getattr(process,JetsPtSkimmedNameForward))           
+        
+      del patCentralAK5Jets[-1]
+      del patForwardAK5Jets[-1]
+        
+     if not isPileUpJetID :
        process.ak5PFJetPath.remove(getattr(process,noPUJetName))
    
 
@@ -312,3 +331,9 @@ def AK5JetCollectionsPATSelection(process,
                                     process.genParticlesForMETAllVisible*
                                     process.genMetTrue)
 
+
+
+ print "                    "
+ print "Central jets skimmed collection : %s"%patCentralAK5Jets
+ print "Forward jets skimmed collection : %s"%patForwardAK5Jets
+ print "                    "
