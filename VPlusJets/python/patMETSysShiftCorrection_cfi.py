@@ -8,7 +8,9 @@ def metShiftSystematicCorrection(process,
                                  didPhotonSystematic,
                                  didTauSystematic,
                                  patTypeIMetCorrected,
-                                 patTypeIMetCorrectedForMetUncertainty):
+                                 patTypeIMetCorrectedForMetUncertainty,
+                                 patTypeIMetCorrectedShifted,
+                                 patTypeIMetCorrectedShiftedForMetUncertainty):
 
 
 
@@ -29,7 +31,6 @@ def metShiftSystematicCorrection(process,
  process.load("JetMETCorrections.Type1MET.pfMETsysShiftCorrections_cfi")
 
  ######## Some basic parameters:
- patTypeIMetCorrected.append('patMETsPFlow')
 
  if not useSmearedCollection:
      
@@ -138,6 +139,8 @@ def metShiftSystematicCorrection(process,
                                                                   srcType1Corrections = cms.VInputTag(cms.InputTag(nameShifter))))
 
   process.metShiftSystematicCorrectionSequence += getattr(process,nameShifter)*getattr(process,nameCorrMet)
+
+  patTypeIMetCorrectedShifted.append(nameCorrMet)  
   
  else :
 
@@ -150,6 +153,8 @@ def metShiftSystematicCorrection(process,
 
 
     process.metShiftSystematicCorrectionSequence += getattr(process,nameShifter)* getattr(process,nameCorrMet)
+
+    patTypeIMetCorrectedShifted.append(nameCorrMet)  
 
     if not useSmearedCollection:
 
@@ -167,6 +172,8 @@ def metShiftSystematicCorrection(process,
 
             process.metShiftSystematicCorrectionSequence += getattr(process,nameShifter)*getattr(process,nameCorrMet)
 
+            patTypeIMetCorrectedShiftedForMetUncertainty.append(nameCorrMet)
+
     else : ## apply to both smeared and not smeared collection
 
         for module in patTypeIMetCorrectedForMetUncertainty :
@@ -181,19 +188,19 @@ def metShiftSystematicCorrection(process,
             setattr(process,nameCorrMet, process.pfMetShiftCorrected.clone(src = cms.InputTag(module),
                                                                            srcType1Corrections = cms.VInputTag(cms.InputTag(nameShifter))))
 
-            process.metShiftSystematicCorrectionSequence += getattr(process,nameShifter)* getattr(process,nameCorrMet)
-
-
-        for module in patTypeIMetCorrectedForMetUncertainty :
-
-            if not didPhotonSystematic and "Photon" in module : continue
-            if not didTauSystematic    and "Tau"    in module : continue
-
-            nameShifter = module+'MEtSysShiftCorr'
-            nameCorrMet = module+'SysShifted'
-
-            setattr(process,nameShifter, process.pfMEtSysShiftCorr.clone(src = cms.InputTag(module)))
-            setattr(process,nameCorrMet, process.pfMetShiftCorrected.clone(src = cms.InputTag(module),
-                                                                           srcType1Corrections = cms.VInputTag(cms.InputTag(nameShifter))))
-
             process.metShiftSystematicCorrectionSequence += getattr(process,nameShifter)*getattr(process,nameCorrMet)
+
+            patTypeIMetCorrectedShiftedForMetUncertainty.append(nameCorrMet)
+
+
+ if useSmearedCollection: ## the shifted smeared met should be the basic one, the not smear can be used to assign a uncertainty in case
+
+  NameTemp = patTypeIMetCorrectedShifted[0]
+  patTypeIMetCorrectedShifted[0] = patTypeIMetCorrectedShiftedForMetUncertainty[0]
+  patTypeIMetCorrectedShiftedForMetUncertainty[0] = NameTemp
+
+
+ print "                         "
+ print "Corrected MET to be used as reference %s       "%patTypeIMetCorrectedShifted
+ print "Corrected MET to be used for MET Uncertainty %s"%patTypeIMetCorrectedShiftedForMetUncertainty
+ print "                         "
