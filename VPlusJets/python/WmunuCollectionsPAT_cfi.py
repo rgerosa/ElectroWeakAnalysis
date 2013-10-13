@@ -43,18 +43,11 @@ def WmunuCollectionsPAT(process,
 
  ### produce new muon  momentum using the new TuneP --> version of CMSSW after 5_3_5
  process.patTunePMuonPFlow = cms.EDProducer("TunePMuonProducer",
-                                             mulabel = patMuonCollection)
+                                             muLabel = patMuonCollection)
 
- if isHEEPID:
-    process.tightMuons = cms.EDFilter("PATMuonSelector",
-                                       src = cms.InputTag("patTunePMuonPFlow"),
-                                       cut = cms.string(""))
-
- else:
-   process.tightMuons = cms.EDFilter("PATMuonSelector",
-                                      src = patMuonCollection,
-                                      cut = cms.string(""))
-         
+ process.tightMuons = cms.EDFilter("PATMuonSelector",
+                                    src = cms.InputTag("patTunePMuonPFlow"),
+                                    cut = cms.string(""))
  if isQCD:
     ### invert the isolation cut to select a QCD enriched sample in data 
     isolationCutString = "(pfIsolationR04().sumChargedHadronPt+max(0.,pfIsolationR04().sumNeutralHadronEt+pfIsolationR04().sumPhotonEt-0.5*pfIsolationR04().sumPUPt))/pt> 0.12" 
