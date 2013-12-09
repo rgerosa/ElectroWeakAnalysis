@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 import pprint
-
+#CMSSW_BASE =os.environment()
 ##########################
 ### Parsing Parameters ###
 ##########################
@@ -20,10 +20,10 @@ options.register ('isTransverseMassCut', False, VarParsing.multiplicity.singleto
 options.register ('isHEEPID', True, VarParsing.multiplicity.singleton, VarParsing.varType.int,
                   "Use the HEEP electron ID instead of the MVA one")
 
-options.register ('globalTag', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
+options.register ('globalTag', 'GR_R_53_V10::All', VarParsing.multiplicity.singleton, VarParsing.varType.string,
                   "Global Tag to be used")
 
-options.register ('numEventsToRun', -1, VarParsing.multiplicity.singleton, VarParsing.varType.int,
+options.register ('numEventsToRun', 10 , VarParsing.multiplicity.singleton, VarParsing.varType.int,
                   "Number of events to process: -1 means all the input events")
 
 options.register ('outputFileName', 'WmunuJetAnalysisntuple.root', VarParsing.multiplicity.singleton, VarParsing.varType.string,
@@ -56,7 +56,7 @@ options.register ('isRequireTwoJets', False, VarParsing.multiplicity.singleton, 
 options.register ('storeSmearandShiftCollections', False, VarParsing.multiplicity.singleton, VarParsing.varType.int,
                   "true if you want to store and skim also shifted/smeared jet collections")
 
-options.register ('skipAnalyzerAndDumpOutput', False, VarParsing.multiplicity.singleton, VarParsing.varType.int,
+options.register ('skipAnalyzerAndDumpOutput', False , VarParsing.multiplicity.singleton, VarParsing.varType.int,
                   "true if you don't want to run the analyzer but dump a output file with all the collections keep*")
 
 
@@ -100,12 +100,12 @@ process.load("ElectroWeakAnalysis.VPlusJets.AllPassFilter_cfi")
 #############################
 
 if not options.isMC :
-    if options.globalTag !='' :
+    if options.globalTag !='GR_R_53_V10::All' :  #inserted
      process.GlobalTag.globaltag = cms.string(globalTag)
     else :
      process.GlobalTag.globaltag = 'GR_P_V39_AN3::All'        
 else:
-    if options.globalTag !='' :
+    if options.globalTag !='GR_R_53_V10::All' :  #inserted
      process.GlobalTag.globaltag = cms.string(globalTag)
     else:
      process.GlobalTag.globaltag = 'START53_V7E::All'
@@ -117,7 +117,7 @@ else:
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring(''))
 
 if options.isMC:
-    process.source.fileNames = cms.untracked.vstring('file:/data2/rgerosa/tlbsm_53x_v3_mc.root')
+    process.source.fileNames = cms.untracked.vstring('file:/uscms_data/d3/bmahakud/NewRaffaeleBibhuWJet/CMSSW_5_3_8_patch1/src/ElectroWeakAnalysis/VPlusJets/test/patuple_2_ntuple/tlbsm_53x_v3_mc.root')
 else :
     process.source.fileNames = cms.untracked.vstring('file:/data2/rgerosa/tlbsm_53x_v3_data.root')
     
@@ -150,9 +150,11 @@ else:
 ## --- to measure all the evetns processed
 process.AllEventsStep = process.AllPassFilter.clone()
     
-
+process.load("ElectroWeakAnalysis.VPlusJets.WmunuCollectionsPAT_cfi")
 ##---------  Vertex and track Collections -----------
 process.load("ElectroWeakAnalysis.VPlusJets.TrackCollections_cfi")
+
+#process.load("ElectroWeakAnalysis.VPlusJets.B2GJetCollectionsPAT_cfi")
 
 process.primaryVertexFilter.src = cms.InputTag("goodOfflinePrimaryVertices");
 process.primaryVertexFilter.cut = cms.string(" ");
@@ -290,53 +292,80 @@ process.RequireTwoJetsORboostedV = cms.EDFilter("JetsORboostedV",
                                                  minNumberPhotons = cms.untracked.int32(0))
 
 process.RequireTwoJetsORboostedVStep = process.AllPassFilter.clone()
-
+print "BibhuprasadMahakud"
+print patCentralAK5Jets
+print patForwardAK5Jets
 
 ##-------- Save V+jets trees --------
-#process.VplusJets = cms.EDAnalyzer("VplusJetsAnalysis", 
-#    TreeName       = cms.string('WJet'),
-#    LeptonType     = cms.string('muon'),                          
-#    runningOverMC  = cms.bool(options.isMC),			
-#    runningOverAOD = cms.bool(False),			
-#    useSmearedCollection          = cms.bool(options.useSmearedCollection),
-#    storeSmearandShiftCollections = cms.bool(options.storeSmearandShiftCollections),
-#    srcMuons  = cms.InputTag("selectedPatMuonsPFlow"), ## the real muon used for fillin the info is taken from Vboson as daughter
-#    jetType   = cms.string("PF"),
-#    srcPFPatCentralAK5Jets = cms.VInputTag(patCentralAK5Jets),
-#    srcPFPatForwardAK5Jets = cms.VInputTag(patForwardAK5Jets), 
-#    srcGenJets     = cms.InputTag("ak5GenJets"),
-#    srcJetsforRho  = cms.string("kt6PFJetsPFlow"),                               
-#    srcJetsforRho_lepIso = cms.string("kt6PFJetsForIsolation"),       
-#    srcFlavorByValue     = cms.InputTag("ak5tagJet"),
-#    VBosonType     = cms.string('W'),
-#    srcVectorBoson = cms.InputTag("bestWmunu"),
-#    srcCorrectedMet = cms.InputTag(patTypeIMetCorrectedShifted),
-#    srcMetForUncertainty = cms.VInputTag(patTypeIMetCorrectedShiftedForMetUncertainty), 
-#    srcGenMet    = cms.InputTag("genMetTrue"),
-#    srcPhoton    = cms.InputTag("cleanPatPhotons"),
-#    IsoValPhoton = cms.VInputTag(cms.InputTag('phoPFIso:chIsoForGsfEle'),
-#                                 cms.InputTag('phoPFIso:phIsoForGsfEle'),
-#                                 cms.InputTag('phoPFIso:nhIsoForGsfEle')),
-#    srcPrimaryVertex = cms.InputTag("goodOfflinePrimaryVertices"),            
-#    srcBeamSpot      = cms.InputTag("offlineBeamSpot"),
-#    srcGenParticles  = cms.InputTag("genParticles"),
-#    bTagger          = cms.string("combinedSecondaryVertexBJetTags"),
-#    pfCandidateForGrooming = cms.InputTag("pfNoElectronPFlow"),
-#    pfCandiatePileUp       = cms.InputTag("pfPileUpPFlow"),
-#    doGroomedAK5     = cms.bool(True),
-#    doGroomedAK6     = cms.bool(True),
-#    doGroomedAK7     = cms.bool(True),
-#    doGroomedAK8     = cms.bool(True),
-#    doGroomedAK10    = cms.bool(True),
-#    doGroomedAK12    = cms.bool(True),
+
+process.VplusJets = cms.EDAnalyzer("VplusJetsAnalysis", 
+    TreeName       = cms.string('WJet'),
+    JetCollection  = cms.string('ak5PFJetsPtSkimmed'),
+    LeptonType     = cms.string('muon'),                          
+    runningOverMC  = cms.bool(options.isMC),			
+    runningOverAOD = cms.bool(False),
+    srcPFCorVBFTag = cms.InputTag("ak5PFJetsPtSkimmedForward"),
+    srcPFCor = cms.InputTag("ak5PFJetsPtSkimmedCentral"),			
+    useSmearedCollection          = cms.bool(options.useSmearedCollection),
+    storeSmearandShiftCollections = cms.bool(options.storeSmearandShiftCollections),
+    srcMuons  = cms.InputTag("selectedPatMuonsPFlow"), ## the real muon used for fillin the info is taken from Vboson as daughter
+    jetType   = cms.string("PF"),
+    srcPFPatCentralAK5Jets = cms.VInputTag(patCentralAK5Jets),
+    srcPFPatForwardAK5Jets = cms.VInputTag(patForwardAK5Jets), 
+    srcGenJets     = cms.InputTag("ak5GenJets"),
+    srcJetsforRho  = cms.string("kt6PFJetsPFlow"),                               
+    srcJetsforRho_lepIso = cms.string("kt6PFJetsForIsolation"),       
+    srcFlavorByValue     = cms.InputTag("ak5tagJet"),
+    VBosonType     = cms.string('W'),
+    srcVectorBoson = cms.InputTag("bestWmunu"),
+    srcCorrectedMet = cms.InputTag('patTypeIMetCorrectedShifted'),
+    srcMetForUncertainty = cms.VInputTag(patTypeIMetCorrectedShiftedForMetUncertainty), 
+    srcGenMet    = cms.InputTag("genMetTrue"),
+    srcPhoton    = cms.InputTag("cleanPatPhotons"),
+    IsoValPhoton = cms.VInputTag(cms.InputTag('phoPFIso:chIsoForGsfEle'),
+                                 cms.InputTag('phoPFIso:phIsoForGsfEle'),
+                                 cms.InputTag('phoPFIso:nhIsoForGsfEle')),
+    srcPrimaryVertex = cms.InputTag("goodOfflinePrimaryVertices"),            
+    srcGen  = cms.string('ak5GenJets'),
+  #  srcMet = cms.InputTag("patMetShiftCorrected"),
+    srcMet = cms.InputTag("pfType1CorrectedMet"),
+    srcBeamSpot      = cms.InputTag("offlineBeamSpot"),
+    srcGenParticles  = cms.InputTag("genParticles"),
+    bTagger          = cms.string("combinedSecondaryVertexBJetTags"),
+    pfCandidateForGrooming = cms.InputTag("pfNoElectronPFlow"),
+    pfCandiatePileUp       = cms.InputTag("pfPileUpPFlow"),
+ #   bTagger=cms.string("simpleSecondaryVertexHighEffBJetTags"),
+    doGroomedAK3     = cms.bool(True),
+    doGroomedAK35    = cms.bool(True),
+    doGroomedAK4     = cms.bool(True),
+    doGroomedAK45    = cms.bool(True),
+    doGroomedAK5     = cms.bool(True),
+    doGroomedAK55    = cms.bool(True),
+    doGroomedAK6     = cms.bool(True),
+    doGroomedAK65    = cms.bool(True),
+    doGroomedAK7     = cms.bool(True),
+    doGroomedAK75    = cms.bool(True),
+    doGroomedAK8     = cms.bool(True),
+    doGroomedAK85    = cms.bool(True),
+    doGroomedAK9     = cms.bool(True),
+    doGroomedAK95     = cms.bool(True),
+    doGroomedAK10    = cms.bool(True),
+    doGroomedAK105    = cms.bool(True),
+    doGroomedAK11    = cms.bool(True),
+    doGroomedAK115    = cms.bool(True),
+    doGroomedAK12    = cms.bool(True),
 #    doGroomedCA8     = cms.bool(True),
 #    doGroomedCA12    = cms.bool(True),
-#    applyJECToGroomedJets =cms.bool(True))
+    applyJECToGroomedJets =cms.bool(True)
+)
 
-#if isMC:
-#    process.VplusJets.JEC_GlobalTag_forGroomedJet = cms.string("START53_V15")
-#else:
-#    process.VplusJets.JEC_GlobalTag_forGroomedJet = cms.string("FT_53_V10_AN3")
+ 
+
+
+if options.isMC:
+     process.VplusJets.JEC_GlobalTag_forGroomedJet = cms.string("START53_V7G")  
+else:
+     process.VplusJets.JEC_GlobalTag_forGroomedJet = cms.string("FT_53_V10_AN3")
 
 
 process.myseq = cms.Sequence( process.AllEventsStep*
@@ -375,11 +404,12 @@ if options.skipAnalyzerAndDumpOutput :
     process.VetoSequence.remove(process.looseMuonStep)
     process.VetoSequence.remove(process.looseElectronStep)
     
-process.p = cms.Path( process.myseq)
+process.p = cms.Path( process.myseq  )
 
 if options.skipAnalyzerAndDumpOutput :
  process.EndPath = cms.EndPath(process.output)
-
+else:
+    process.p += process.VplusJets
 ############################
 ## Dump the output Python ##
 ############################

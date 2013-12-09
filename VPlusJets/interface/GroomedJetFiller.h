@@ -107,10 +107,10 @@ namespace ewk
 			//GroomedJetFiller() {};
 			/// Destructor, does nothing 
 			~GroomedJetFiller(){  
-				if(jec_) delete jec_; 
-				if(jecUnc_) delete jecUnc_; 
-				if(mJetDef) delete mJetDef;
-				if(mAreaDefinition) delete mAreaDefinition;
+			//	if(jec_) delete jec_; 
+			//	if(jecUnc_) delete jecUnc_; 
+			//	if(mJetDef) delete mJetDef;
+			//	if(mAreaDefinition) delete mAreaDefinition;
 				//if(mBgeGrid) delete mBgeGrid;
 				//if(mBgeMedi) delete mBgeMedi;
 			};
@@ -174,6 +174,7 @@ namespace ewk
 			std::string lableGen;        
 
 			//Jet Def
+                        double                  mJetRadiusNum;
 			double                  mJetRadius;
 			std::string             mJetAlgo;        
 			fastjet::JetDefinition *mJetDef;

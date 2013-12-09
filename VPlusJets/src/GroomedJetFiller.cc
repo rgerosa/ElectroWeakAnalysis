@@ -20,7 +20,7 @@
 
 // user include files
 #include "ElectroWeakAnalysis/VPlusJets/interface/GroomedJetFiller.h" 
-#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"
@@ -58,13 +58,13 @@ ewk::GroomedJetFiller::GroomedJetFiller(const char *name,
 	mJetAlgo.push_back( jetAlgorithmLabel.at(0) ); mJetAlgo.push_back( jetAlgorithmLabel.at(1) );
 	if (labelSize == 3 || labelSize == 4 ){
 		const char* tmp1 = &jetAlgorithmLabel.at(2);
-		mJetRadius = atof( tmp1 )/10.;
-            std::cout <<"BibhuUnderstandingJetRadius = "<<tmp1<<std::endl;             
+	mJetRadius = atof( tmp1 )/10.;
+            std::cout <<"BibhuUnderstandingJetRadius = "<<tmp1<<std::endl;
                 mJetRadiusNum = atof( tmp1 );
         if(mJetRadiusNum < 25.0 ){
-		mJetRadius = ( mJetRadiusNum )/10.;
+                mJetRadius = ( mJetRadiusNum )/10.;
                                   }
-         
+
         if( mJetRadiusNum > 25.0 ){
               mJetRadius = ( mJetRadiusNum )/100.;
 
@@ -314,18 +314,16 @@ ewk::GroomedJetFiller::GroomedJetFiller(const char *name,
 	if( iConfig.existsAs<bool>("runningOverMC") ) 
 	  runningOverMC_=iConfig.getParameter< bool >("runningOverMC");
 	else runningOverMC_= false;
-      std:: cout<<"bibhu-1 ........"<<std::endl;
+
 	// --- Are we applying AK7 JEC to our groomed jet ? --- 
 	if( iConfig.existsAs<bool>("applyJECToGroomedJets") ) 
 	  applyJECToGroomedJets_=iConfig.getParameter< bool >("applyJECToGroomedJets");
 	else applyJECToGroomedJets_ = false;
-     std:: cout<<"bibhu-2 ........"<<std::endl;
 
 	//// --- fastjet rho label -------
 	JetsFor_rho =  iConfig.getParameter<std::string>("srcJetsforRho") ; 
 	if(applyJECToGroomedJets_)
 	  JEC_GlobalTag_forGroomedJet = iConfig.getParameter<std::string>("JEC_GlobalTag_forGroomedJet") ; 
-    std:: cout<<"bibhu-3 ........"<<std::endl;
 
 	//// --- primary vertex -------
 	if(  iConfig.existsAs<edm::InputTag>("srcPrimaryVertex") )
@@ -370,74 +368,6 @@ ewk::GroomedJetFiller::GroomedJetFiller(const char *name,
 				jecStr.push_back( fDir + "_L3Absolute_AK7PFchs.txt" );
 				if (!runningOverMC_)
 				  jecStr.push_back( fDir + "_L2L3Residual_AK7PFchs.txt" );
-       std:: cout<<"bibhu-4 ........"<<std::endl;
-  	// ---- setting up the jec on-the-fly from text files...    
-	//    std::string fDir = "JEC/" + JEC_GlobalTag_forGroomedJet;  
-       // const char *workarea = getenv("CMSSW_BASE");
- std:: cout<<"bibhu-5 ........"<<std::endl;
-	std::string fDir =  JEC_GlobalTag_forGroomedJet;                                //std::string(workarea) + "/src/ElectroWeakAnalysis/VPlusJets/test/patuple_2_ntuple/" +  JEC_GlobalTag_forGroomedJet;   
-//	std::string fDir = "JEC/"+JEC_GlobalTag_forGroomedJet;   
-        std:: cout<<"bibhu-6 ........"<<std::endl;
-	//std::cout<<"JEC_GlobalTag_forGroomedJet="<<JEC_GlobalTag_forGroomedJet<<std::endl;
-	std::vector< JetCorrectorParameters > jecPars;
-   std:: cout<<"bibhu-7 ........"<<std::endl;
-	std::vector< std::string > jecStr;
-std:: cout<<"bibhu-8 ........"<<std::endl;
-
-	if(applyJECToGroomedJets_) {
-
-      std:: cout<<"bibhu-9 ........"<<std::endl;
-		if (jetAlgorithmAdditonalLabel_=="_PF"){
-                       std:: cout<<"bibhu-10 ........"<<std::endl;
-			if(mJetAlgo == "AK" && fabs(mJetRadius-0.5)<0.001) {
-                             std:: cout<<"bibhu-11 ........"<<std::endl;
-
-				jecStr.push_back( fDir +  "_L1FastJet_AK5PF.txt" );
-                                  std:: cout<<"bibhu-12 ........"<<std::endl;
-				jecStr.push_back( fDir + "_L2Relative_AK5PF.txt" );
-                                  std:: cout<<"bibhu-13 ........"<<std::endl;
-				jecStr.push_back( fDir + "_L3Absolute_AK5PF.txt" );
-                                  std:: cout<<"bibhu-14 ........"<<std::endl;
-				if (!runningOverMC_)
-                                  std:: cout<<"bibhu-15 ........"<<std::endl;
-				  jecStr.push_back( fDir + "_L2L3Residual_AK5PF.txt" );
-                                     std:: cout<<"bibhu-16 ........"<<std::endl;
-			}else{  std:: cout<<"bibhu-17 ........"<<std::endl;
-				jecStr.push_back( fDir + "_L1FastJet_AK7PF.txt" );
-                                  std:: cout<<"bibhu-18 ........"<<std::endl;
-				jecStr.push_back( fDir + "_L2Relative_AK7PF.txt" );
-                                  std:: cout<<"bibhu-19 ........"<<std::endl;
-				jecStr.push_back( fDir + "_L3Absolute_AK7PF.txt" );
-                                  std:: cout<<"bibhu-19.1  ........"<<std::endl;
-				if (!runningOverMC_)
-                                  std:: cout<<"bibhu-19.2 ........"<<std::endl;
-				  jecStr.push_back( fDir + "_L2L3Residual_AK7PF.txt" );
-                                  std:: cout<<"bibhu-19.3 ........"<<std::endl;
-			}
-		}else //if (jetAlgorithmAdditonalLabel_=="_PFCHS")
-		{   std:: cout<<"bibhu-20 ........"<<std::endl;
-			if(mJetAlgo == "AK" && fabs(mJetRadius-0.5)<0.001) {
-                               std:: cout<<"bibhu-21 ........"<<std::endl;
-				jecStr.push_back( fDir +  "_L1FastJet_AK5PFchs.txt" );
-                                std:: cout<<"bibhu-22 ........"<<std::endl;
-				jecStr.push_back( fDir + "_L2Relative_AK5PFchs.txt" );
-                                std:: cout<<"bibhu-23 ........"<<std::endl;
-				jecStr.push_back( fDir + "_L3Absolute_AK5PFchs.txt" );
-                                std:: cout<<"bibhu-23.1 ........"<<std::endl;
-				if (!runningOverMC_)
-                                  std:: cout<<"bibhu-23.2 ........"<<std::endl;
-				  jecStr.push_back( fDir + "_L2L3Residual_AK5PFchs.txt" );
-			}else{  std:: cout<<"bibhu-24 ........"<<std::endl;
-				jecStr.push_back( fDir + "_L1FastJet_AK7PFchs.txt" );
-                                std:: cout<<"bibhu-25 ........"<<std::endl;
-				jecStr.push_back( fDir + "_L2Relative_AK7PFchs.txt" );
-                                std:: cout<<"bibhu-26 ........"<<std::endl;
-				jecStr.push_back( fDir + "_L3Absolute_AK7PFchs.txt" );
-                                std:: cout<<"bibhu-26.1 ........"<<std::endl;
-				if (!runningOverMC_)
-                                  std:: cout<<"bibhu-26.2 ........"<<std::endl;
-				  jecStr.push_back( fDir + "_L2L3Residual_AK7PFchs.txt" );
-                                  std:: cout<<"bibhu-26.3 ........"<<std::endl;
 			}
 		}
 
@@ -465,49 +395,6 @@ std:: cout<<"bibhu-8 ........"<<std::endl;
 			}
 		}
 
-
-      std:: cout<<"bibhu-27 ........"<<std::endl;
-    cout<<" JetCorrectorParameters( jecStr[i] )"<< jecStr[i]<<endl ; 
-    std:: cout<<"bibhu-28 ........"<<std::endl;
-			JetCorrectorParameters* ijec = new JetCorrectorParameters( jecStr[i] );
-
-          std:: cout<<"bibhu-29 ........"<<std::endl;
-
-			jecPars.push_back( *ijec );
-
-               std:: cout<<"bibhu-30 ........"<<std::endl;
-		}
-
-		jec_ = new FactorizedJetCorrector(jecPars);
-               std:: cout<<"bibhu-31 ........"<<std::endl;
-		if (jetAlgorithmAdditonalLabel_=="_PF"){
-
-                     std:: cout<<"bibhu-32 ........"<<std::endl;
-			if(mJetAlgo == "AK" && fabs(mJetRadius-0.5)<0.001) {
-                                std:: cout<<"bibhu-33 ........"<<std::endl;
-				jecUnc_ = new JetCorrectionUncertainty( fDir + "_Uncertainty_AK5PF.txt" );
-
-                                std:: cout<<"bibhu-34 ........"<<std::endl;
-			}else{ std:: cout<<"bibhu-35 ........"<<std::endl;
-				jecUnc_ = new JetCorrectionUncertainty( fDir + "_Uncertainty_AK7PF.txt" );
-                               std:: cout<<"bibhu-36 ........"<<std::endl;
-			}
-		}else //if (jetAlgorithmAdditonalLabel_=="_PFCHS")
-		{         std:: cout<<"bibhu-37 ........"<<std::endl;
-			if(mJetAlgo == "AK" && fabs(mJetRadius-0.5)<0.001) {
-
-                             std:: cout<<"bibhu-38 ........"<<std::endl;
-				jecUnc_ = new JetCorrectionUncertainty( fDir + "_Uncertainty_AK5PFchs.txt" );
-                               std:: cout<<"bibhu-39 ........"<<std::endl;
-			}else{  std:: cout<<"bibhu-40 ........"<<std::endl;
-				jecUnc_ = new JetCorrectionUncertainty( fDir + "_Uncertainty_AK7PFchs.txt" );
-                                std:: cout<<"bibhu-40.1 ........"<<std::endl;
-
-                              std:: cout<<"bibhu-41 ........"<<std::endl;
-			}
-                            std:: cout<<"bibhu-42 ........"<<std::endl;
-		}
-              std:: cout<<"bibhu-43 ........"<<std::endl;
 
 	}
 

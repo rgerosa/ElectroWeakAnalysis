@@ -11,6 +11,8 @@
 <use name="HLTrigger/HLTcore"/>
 <use name="RecoEcal/EgammaCoreTools"/>
 <use name="EGamma/EGammaAnalysisTools"/>
+<use name="DataFormats/HepMCCandidate"/>
+<use name="JetSubstructure/SubstructureTools"/>
 <flags   EDM_PLUGIN="1"/>
 <export>
    <lib name="1"/>
